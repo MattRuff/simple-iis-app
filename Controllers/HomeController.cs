@@ -156,7 +156,8 @@ namespace SimpleIISApp.Controllers
                     case "nullreference":
                         _logger.LogError("🔥 STACK TRACE TEST: Triggering NullReferenceException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
                         string nullString = null;
-                        return Json(new { length = nullString.Length }); // This will throw NullReferenceException
+                        int length = nullString.Length; // This will throw NullReferenceException
+                        throw new InvalidOperationException("This should never be reached");
 
                     case "argumentnull":
                         _logger.LogError("🔥 STACK TRACE TEST: Triggering ArgumentNullException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
@@ -165,17 +166,20 @@ namespace SimpleIISApp.Controllers
                     case "invalidoperation":
                         _logger.LogError("🔥 STACK TRACE TEST: Triggering InvalidOperationException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
                         var emptyList = new List<string>();
-                        return Json(new { first = emptyList.First() }); // This will throw InvalidOperationException
+                        var first = emptyList.First(); // This will throw InvalidOperationException
+                        throw new InvalidOperationException("This should never be reached");
 
                     case "dividebyzero":
                         _logger.LogError("🔥 STACK TRACE TEST: Triggering DivideByZeroException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
                         int zero = 0;
-                        return Json(new { result = 10 / zero }); // This will throw DivideByZeroException
+                        int result = 10 / zero; // This will throw DivideByZeroException
+                        throw new InvalidOperationException("This should never be reached");
 
                     case "outofrange":
                         _logger.LogError("🔥 STACK TRACE TEST: Triggering IndexOutOfRangeException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
                         var array = new int[] { 1, 2, 3 };
-                        return Json(new { value = array[10] }); // This will throw IndexOutOfRangeException
+                        int value = array[10]; // This will throw IndexOutOfRangeException
+                        throw new InvalidOperationException("This should never be reached");
 
                     case "custom":
                         _logger.LogError("🔥 STACK TRACE TEST: Triggering custom exception for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);

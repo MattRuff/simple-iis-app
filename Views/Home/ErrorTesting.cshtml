@@ -216,18 +216,24 @@ function triggerError(errorType) {
         button.disabled = false;
         
         if (!response.ok) {
-            console.error(`✅ ${errorName} successfully triggered: ${response.status} ${response.statusText}`);
+            // This is expected! Error was successfully triggered
+            console.log(`✅ ${errorName} successfully triggered: ${response.status} ${response.statusText}`);
             alert(`✅ ${errorName} triggered successfully!\n\nStatus: ${response.status} ${response.statusText}\n\nCheck Datadog for:\n• Error logs and stack traces\n• Error rate monitoring\n• Alert notifications\n• Distributed traces`);
+        } else {
+            // This shouldn't happen - error should have been thrown
+            console.warn(`⚠️ ${errorName} may not have triggered properly: ${response.status}`);
+            alert(`⚠️ ${errorName} may not have triggered properly!\n\nStatus: ${response.status} (Expected 500)\n\nPlease check the server logs.`);
         }
         return response.text();
     })
     .catch(error => {
-        // Reset button
+        // Reset button  
         button.textContent = originalText;
         button.disabled = false;
         
-        console.error(`✅ ${errorName} successfully triggered:`, error);
-        alert(`✅ ${errorName} triggered successfully!\n\nError: ${error.message}\n\nCheck Datadog for:\n• Error logs and stack traces\n• Error rate monitoring\n• Alert notifications\n• Distributed traces`);
+        // Network errors or parsing errors - this could also indicate success
+        console.log(`✅ ${errorName} likely triggered successfully (network error):`, error);
+        alert(`✅ ${errorName} likely triggered successfully!\n\nNetwork Error: ${error.message}\n\nThis often indicates the error was thrown successfully.\n\nCheck Datadog for:\n• Error logs and stack traces\n• Error rate monitoring\n• Alert notifications\n• Distributed traces`);
     });
 }
 </script>

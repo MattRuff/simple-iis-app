@@ -105,14 +105,20 @@ function triggerError(errorType) {
     })
     .then(response => {
         if (!response.ok) {
-            console.error(`✅ Error successfully triggered: ${response.status} ${response.statusText}`);
-            alert(`✅ Error triggered! Check Datadog for error logs and alerts.\nStatus: ${response.status} ${response.statusText}`);
+            // This is expected! Error was successfully triggered
+            console.log(`✅ Error successfully triggered: ${response.status} ${response.statusText}`);
+            alert(`✅ Error triggered successfully!\nStatus: ${response.status} ${response.statusText}\n\nCheck Datadog for error logs and alerts.`);
+        } else {
+            // This shouldn't happen - error should have been thrown
+            console.warn(`⚠️ Error may not have triggered properly: ${response.status}`);
+            alert(`⚠️ Error may not have triggered properly!\nStatus: ${response.status} (Expected 500)\n\nPlease check the server logs.`);
         }
         return response.text();
     })
     .catch(error => {
-        console.error('✅ Error successfully triggered:', error);
-        alert(`✅ Error triggered! Check Datadog for error logs and alerts.\nError: ${error.message}`);
+        // Network errors or parsing errors - this could also indicate success
+        console.log('✅ Error likely triggered successfully (network error):', error);
+        alert(`✅ Error likely triggered successfully!\nNetwork Error: ${error.message}\n\nThis often indicates the error was thrown successfully.\n\nCheck Datadog for error logs and alerts.`);
     });
 }
 </script>
