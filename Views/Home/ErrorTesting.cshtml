@@ -60,6 +60,13 @@
     </div>
 
     <div class="error-test-card">
+        <h3>🔗 Aggregate Exception</h3>
+        <p>Tests complex error handling - multiple nested exceptions with stack traces.</p>
+        <button onclick="triggerError('aggregate')" class="test-error-btn">Trigger Aggregate Error</button>
+        <small>Simulates multiple nested exceptions with detailed stack traces</small>
+    </div>
+
+    <div class="error-test-card">
         <h3>❓ Generic Exception</h3>
         <p>Tests general error handling - catch-all error scenarios.</p>
         <button onclick="triggerError('exception')" class="test-error-btn">Trigger Generic Error</button>
@@ -76,6 +83,9 @@
         <li><strong>Traces:</strong> Look for distributed traces showing error propagation</li>
         <li><strong>Git Context:</strong> Errors include git commit SHA for deployment tracking</li>
         <li><strong>User Context:</strong> Errors include user information for debugging</li>
+        <li><strong>Full Stack Traces:</strong> Complete call stack information for each exception</li>
+        <li><strong>Exception Data:</strong> Rich metadata including IP, timestamp, user agent</li>
+        <li><strong>Nested Exceptions:</strong> Complex error scenarios with inner exceptions</li>
     </ul>
 </div>
 
@@ -165,6 +175,7 @@ function triggerError(errorType) {
         'outofrange': 'Index Out of Range Exception',
         'timeout': 'Timeout Exception',
         'custom': 'Custom Application Exception',
+        'aggregate': 'Aggregate Exception',
         'exception': 'Generic Exception'
     };
     

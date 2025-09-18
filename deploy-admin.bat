@@ -8,12 +8,21 @@ if %errorlevel% neq 0 (
     echo.
     echo Right-click this file and select "Run as administrator"
     echo.
-    pause
+    pause >nul
     exit /b 1
 )
 
-:: Create logs directory
+:: Prevent multiple instances
+if exist "logs\deploy_admin_running.lock" (
+    echo ❌ Another admin deployment is already running!
+    echo If this is incorrect, delete: logs\deploy_admin_running.lock
+    pause >nul
+    exit /b 1
+)
+
+:: Create logs directory and lock file
 if not exist "logs" mkdir "logs"
+echo %date% %time% > "logs\deploy_admin_running.lock"
 
 :: Set timestamp for log files using PowerShell (replaced wmic which was deprecated)
 for /f "usebackq delims=" %%i in (`powershell -command "Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'" 2^>nul`) do set "timestamp=%%i"
@@ -110,10 +119,10 @@ call :log_and_echo "    ✓ Cleaned build artifacts"
 
 call :log_and_echo ""
 call :log_and_echo "[2/6] Publishing application..."
-echo [%time%] Running: dotnet publish -c Release -o bin\Release\net9.0\publish >> "%LOG_FILE%"
+echo [%time%] Running: dotnet publish -c Release -o bin\Release\net9.0\publish --verbosity detailed >> "%LOG_FILE%"
 echo [%time%] DD_GIT_COMMIT_SHA=%DD_GIT_COMMIT_SHA% >> "%LOG_FILE%"
 echo [%time%] DD_GIT_REPOSITORY_URL=%DD_GIT_REPOSITORY_URL% >> "%LOG_FILE%"
-set DD_GIT_COMMIT_SHA=%DD_GIT_COMMIT_SHA%&& set DD_GIT_REPOSITORY_URL=%DD_GIT_REPOSITORY_URL%&& dotnet publish -c Release -o bin\Release\net9.0\publish 1>>"%LOG_FILE%" 2>>"%ERROR_LOG%"
+set DD_GIT_COMMIT_SHA=%DD_GIT_COMMIT_SHA%&& set DD_GIT_REPOSITORY_URL=%DD_GIT_REPOSITORY_URL%&& dotnet publish -c Release -o bin\Release\net9.0\publish --verbosity detailed 1>>"%LOG_FILE%" 2>>"%ERROR_LOG%"
 if %ERRORLEVEL% neq 0 (
     call :log_and_echo "    ❌ Publish failed! Check error log: %ERROR_LOG%"
     call :log_and_echo "❌ Deployment failed. Check logs:"
@@ -123,10 +132,23 @@ if %ERRORLEVEL% neq 0 (
     echo ❌ BUILD ERRORS DETECTED! Check the error log for details.
     if exist "%ERROR_LOG%" (
         echo.
-        echo === Recent Errors ===
-        powershell "Get-Content '%ERROR_LOG%' | Select-Object -Last 10"
+        echo === DETAILED ERROR ANALYSIS ===
+        echo Full error log: %ERROR_LOG%
+        echo.
+        echo === STACK TRACE AND ERRORS ===
+        powershell "Get-Content '%ERROR_LOG%' | ForEach-Object { if ($_ -match 'error|exception|stack|fail|Error|Exception|Stack|Fail') { Write-Host $_ -ForegroundColor Red } else { $_ } }"
+        echo.
+        echo === RECENT ERRORS (Last 15 lines) ===
+        powershell "Get-Content '%ERROR_LOG%' | Select-Object -Last 15"
+        echo.
+        echo === BUILD ERRORS WITH STACK TRACES ===
+        powershell "Get-Content '%LOG_FILE%' | Select-String -Pattern 'error|exception|fail' -Context 2,3"
     )
-    pause
+    echo.
+    echo Press any key to exit...
+    :: Clean up lock file on error
+    if exist "logs\deploy_admin_running.lock" del "logs\deploy_admin_running.lock" >nul
+    pause >nul
     exit /b 1
 )
 call :log_and_echo "    ✓ Published"
@@ -145,7 +167,11 @@ if %ERRORLEVEL% neq 0 (
     call :log_and_echo "❌ Deployment failed. Check logs:"
     call :log_and_echo "   Main log: %LOG_FILE%"
     call :log_and_echo "   Error log: %ERROR_LOG%"
-    pause
+    echo.
+    echo Press any key to exit...
+    :: Clean up lock file on error
+    if exist "logs\deploy_admin_running.lock" del "logs\deploy_admin_running.lock" >nul
+    pause >nul
     exit /b 1
 )
 call :log_and_echo "    ✓ Files copied to IIS directory"
@@ -192,4 +218,11 @@ echo 📂 Log files created in 'logs' folder:
 echo    📄 Main: %LOG_FILE%
 echo    ❌ Errors: %ERROR_LOG%
 echo.
-pause
+echo ✅ Deployment completed successfully!
+echo.
+
+:: Clean up lock file
+if exist "logs\deploy_admin_running.lock" del "logs\deploy_admin_running.lock" >nul
+
+echo Press any key to exit...
+pause >nul

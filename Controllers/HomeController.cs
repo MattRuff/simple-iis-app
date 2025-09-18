@@ -142,47 +142,84 @@ namespace SimpleIISApp.Controllers
         {
             var gitSha = Environment.GetEnvironmentVariable("DD_GIT_COMMIT_SHA") ?? "unknown";
             var user = User.Identity?.Name ?? "Anonymous";
+            var timestamp = DateTime.UtcNow;
+            var userAgent = Request.Headers["User-Agent"].ToString();
+            var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             
-            _logger.LogWarning("🚨 Error intentionally triggered by {User} - Type: {ErrorType}, Git SHA: {GitSha}", 
-                user, errorType, gitSha);
+            _logger.LogWarning("🚨 INTENTIONAL ERROR TRIGGER - User: {User}, Type: {ErrorType}, Git SHA: {GitSha}, Timestamp: {Timestamp}, IP: {ClientIp}, UserAgent: {UserAgent}", 
+                user, errorType, gitSha, timestamp, clientIp, userAgent);
 
-            switch (errorType.ToLower())
+            try
             {
-                case "nullreference":
-                    _logger.LogError("Triggering NullReferenceException for Datadog testing");
-                    string nullString = null;
-                    return Json(new { length = nullString.Length }); // This will throw NullReferenceException
+                switch (errorType.ToLower())
+                {
+                    case "nullreference":
+                        _logger.LogError("🔥 STACK TRACE TEST: Triggering NullReferenceException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
+                        string nullString = null;
+                        return Json(new { length = nullString.Length }); // This will throw NullReferenceException
 
-                case "argumentnull":
-                    _logger.LogError("Triggering ArgumentNullException for Datadog testing");
-                    throw new ArgumentNullException("testParameter", "This is a test ArgumentNullException for Datadog monitoring");
+                    case "argumentnull":
+                        _logger.LogError("🔥 STACK TRACE TEST: Triggering ArgumentNullException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
+                        throw new ArgumentNullException("testParameter", $"DATADOG TEST: ArgumentNullException triggered by {user} at {timestamp} (Git SHA: {gitSha}) from IP: {clientIp}");
 
-                case "invalidoperation":
-                    _logger.LogError("Triggering InvalidOperationException for Datadog testing");
-                    var emptyList = new List<string>();
-                    return Json(new { first = emptyList.First() }); // This will throw InvalidOperationException
+                    case "invalidoperation":
+                        _logger.LogError("🔥 STACK TRACE TEST: Triggering InvalidOperationException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
+                        var emptyList = new List<string>();
+                        return Json(new { first = emptyList.First() }); // This will throw InvalidOperationException
 
-                case "dividebyzero":
-                    _logger.LogError("Triggering DivideByZeroException for Datadog testing");
-                    int zero = 0;
-                    return Json(new { result = 10 / zero }); // This will throw DivideByZeroException
+                    case "dividebyzero":
+                        _logger.LogError("🔥 STACK TRACE TEST: Triggering DivideByZeroException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
+                        int zero = 0;
+                        return Json(new { result = 10 / zero }); // This will throw DivideByZeroException
 
-                case "outofrange":
-                    _logger.LogError("Triggering IndexOutOfRangeException for Datadog testing");
-                    var array = new int[] { 1, 2, 3 };
-                    return Json(new { value = array[10] }); // This will throw IndexOutOfRangeException
+                    case "outofrange":
+                        _logger.LogError("🔥 STACK TRACE TEST: Triggering IndexOutOfRangeException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
+                        var array = new int[] { 1, 2, 3 };
+                        return Json(new { value = array[10] }); // This will throw IndexOutOfRangeException
 
-                case "custom":
-                    _logger.LogError("Triggering custom exception for Datadog testing");
-                    throw new ApplicationException($"Custom test error triggered by {user} at {DateTime.UtcNow} (Git SHA: {gitSha})");
+                    case "custom":
+                        _logger.LogError("🔥 STACK TRACE TEST: Triggering custom exception for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
+                        var customEx = new ApplicationException($"DATADOG MONITORING TEST: Custom exception triggered by {user} at {timestamp} (Git SHA: {gitSha}) from IP: {clientIp} with UserAgent: {userAgent}");
+                        customEx.Data.Add("GitCommitSha", gitSha);
+                        customEx.Data.Add("TriggeringUser", user);
+                        customEx.Data.Add("ClientIP", clientIp);
+                        customEx.Data.Add("Timestamp", timestamp.ToString("O"));
+                        customEx.Data.Add("ErrorType", "custom");
+                        throw customEx;
 
-                case "timeout":
-                    _logger.LogError("Triggering TimeoutException for Datadog testing");
-                    throw new TimeoutException("Simulated timeout error for Datadog monitoring");
+                    case "timeout":
+                        _logger.LogError("🔥 STACK TRACE TEST: Triggering TimeoutException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
+                        var timeoutEx = new TimeoutException($"DATADOG MONITORING TEST: Timeout error triggered by {user} at {timestamp} (Git SHA: {gitSha})");
+                        timeoutEx.Data.Add("GitCommitSha", gitSha);
+                        timeoutEx.Data.Add("TriggeringUser", user);
+                        throw timeoutEx;
 
-                default:
-                    _logger.LogError("Triggering generic Exception for Datadog testing");
-                    throw new Exception($"Generic test exception triggered by {user} at {DateTime.UtcNow} (Git SHA: {gitSha}) - This is for Datadog error monitoring testing");
+                    case "aggregate":
+                        _logger.LogError("🔥 STACK TRACE TEST: Triggering AggregateException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
+                        var innerEx1 = new InvalidOperationException("First inner exception for testing");
+                        var innerEx2 = new ArgumentException("Second inner exception for testing");
+                        throw new AggregateException($"DATADOG TEST: Multiple errors occurred (triggered by {user})", innerEx1, innerEx2);
+
+                    default:
+                        _logger.LogError("🔥 STACK TRACE TEST: Triggering generic Exception for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
+                        var genericEx = new Exception($"DATADOG MONITORING TEST: Generic exception triggered by {user} at {timestamp} (Git SHA: {gitSha}) from IP: {clientIp}");
+                        genericEx.Data.Add("GitCommitSha", gitSha);
+                        genericEx.Data.Add("TriggeringUser", user);
+                        genericEx.Data.Add("ClientIP", clientIp);
+                        genericEx.Data.Add("Timestamp", timestamp.ToString("O"));
+                        genericEx.Data.Add("UserAgent", userAgent);
+                        genericEx.Data.Add("ErrorType", "generic");
+                        throw genericEx;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the full exception with stack trace before re-throwing
+                _logger.LogError(ex, "🚨 DATADOG ERROR CAPTURED - Full Stack Trace: {ExceptionType} triggered by {User} with Git SHA: {GitSha}. Stack Trace: {StackTrace}", 
+                    ex.GetType().Name, user, gitSha, ex.StackTrace);
+                
+                // Re-throw to ensure it propagates to Datadog
+                throw;
             }
         }
 
