@@ -48,20 +48,20 @@ try {
     Write-Host "     ❌ Failed to enable IIS features: $_" -ForegroundColor Red
 }
 
-# Step 2: Check .NET 6.0 Runtime
+# Step 2: Check .NET 9.0 Runtime
 Write-Host ""
-Write-Host "[2/4] Checking .NET 6.0 Runtime..." -ForegroundColor Yellow
+Write-Host "[2/4] Checking .NET 9.0 Runtime..." -ForegroundColor Yellow
 try {
     $dotnetInfo = dotnet --info 2>$null
-    if ($dotnetInfo -and ($dotnetInfo -match "6\.")) {
-        Write-Host "     ✓ .NET 6.0 Runtime found" -ForegroundColor Green
+    if ($dotnetInfo -and ($dotnetInfo -match "9\.")) {
+        Write-Host "     ✓ .NET 9.0 Runtime found" -ForegroundColor Green
     } else {
-        Write-Host "     ⚠️  .NET 6.0 Runtime not found" -ForegroundColor Yellow
-        Write-Host "     Please install from: https://dotnet.microsoft.com/download/dotnet/6.0" -ForegroundColor Cyan
+        Write-Host "     ⚠️  .NET 9.0 Runtime not found" -ForegroundColor Yellow
+        Write-Host "     Please install from: https://dotnet.microsoft.com/download/dotnet/9.0" -ForegroundColor Cyan
     }
 } catch {
     Write-Host "     ⚠️  .NET not found or not in PATH" -ForegroundColor Yellow
-    Write-Host "     Please install .NET 6.0 Runtime from: https://dotnet.microsoft.com/download/dotnet/6.0" -ForegroundColor Cyan
+    Write-Host "     Please install .NET 9.0 Runtime from: https://dotnet.microsoft.com/download/dotnet/9.0" -ForegroundColor Cyan
 }
 
 # Step 3: Check ASP.NET Core Module
@@ -111,7 +111,7 @@ Write-Host "3. Assign the 'SimpleIISAppPool' application pool to your site" -For
 Write-Host "4. Test by browsing to your site!" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "If you need to install missing components:" -ForegroundColor Yellow
-Write-Host "• .NET 6.0 Runtime: https://dotnet.microsoft.com/download/dotnet/6.0" -ForegroundColor Gray
+Write-Host "• .NET 9.0 Runtime: https://dotnet.microsoft.com/download/dotnet/9.0" -ForegroundColor Gray
 Write-Host "• ASP.NET Core Module: Included with runtime" -ForegroundColor Gray
 Write-Host ""
 

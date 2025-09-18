@@ -13,12 +13,12 @@ A minimal ASP.NET Core application designed for testing IIS deployment on bare W
 ## 🛠️ Requirements
 
 ### On Development Machine:
-- .NET 6.0 SDK
+- .NET 9.0 SDK
 
 ### On Windows Server:
 - Windows Server 2016+ (or Windows 10/11)
 - IIS with ASP.NET Core Module V2
-- .NET 6.0 Runtime
+- .NET 9.0 Runtime
 
 ## 🚀 Quick Deployment
 
@@ -29,12 +29,12 @@ A minimal ASP.NET Core application designed for testing IIS deployment on bare W
 deploy.bat
 
 # OR manually:
-dotnet publish -c Release -o bin\Release\net6.0\publish
+dotnet publish -c Release -o bin\Release\net9.0\publish
 ```
 
 ### Step 2: Copy to Windows Server
 
-Copy the entire `bin\Release\net6.0\publish\` folder to your Windows server.
+Copy the entire `bin\Release\net9.0\publish\` folder to your Windows server.
 
 ### Step 3: Configure IIS
 
@@ -53,14 +53,14 @@ Browse to `http://your-server-ip` or `http://localhost` and you should see the w
 
 ## 📋 Detailed Server Setup
 
-### Install .NET 6.0 Runtime
+### Install .NET 9.0 Runtime
 
 ```powershell
 # Download from Microsoft or use Chocolatey:
-choco install dotnet-6.0-runtime
+choco install dotnet-9.0-runtime
 
 # Or download directly:
-# https://dotnet.microsoft.com/download/dotnet/6.0
+# https://dotnet.microsoft.com/download/dotnet/9.0
 ```
 
 ### Install ASP.NET Core Module V2
@@ -126,7 +126,7 @@ When successfully deployed, the application will display:
 ### Common Issues:
 
 1. **500.19 Error**: ASP.NET Core Module V2 not installed
-2. **500.30 Error**: .NET 6.0 Runtime not installed
+2. **500.30 Error**: .NET 9.0 Runtime not installed
 3. **403 Error**: Check folder permissions
 4. **404 Error**: Verify site binding and physical path
 
