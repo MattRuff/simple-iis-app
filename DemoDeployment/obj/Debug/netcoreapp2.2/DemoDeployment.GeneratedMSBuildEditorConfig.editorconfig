@@ -1,8 +1,0 @@
-is_global = true
-build_property.RootNamespace = DemoDeployment
-build_property.ProjectDir = /Users/matthew.ruyffelaert/Library/CloudStorage/GoogleDrive-matthew.ruyffelaert@datadoghq.com/My Drive/1Learning/IIS-Lab/AspNetCoreIISDeployment/DemoDeployment/
-build_property.EnableComHosting = 
-build_property.EnableGeneratedComInterfaceComImportInterop = 
-build_property.CsWinRTUseWindowsUIXamlProjections = false
-build_property.EffectiveAnalysisLevelStyle = 
-build_property.EnableCodeStyleSeverity = 
