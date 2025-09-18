@@ -1,0 +1,14 @@
+@{
+    ViewData["Title"] = "Access Denied";
+}
+
+<div style="text-align: center; margin-top: 50px;">
+    <h1 style="color: #ff6b6b; font-size: 3em;">🚫</h1>
+    <h2>Access Denied</h2>
+    <p>You don't have permission to access this resource.</p>
+    <p>Please <a asp-controller="Account" asp-action="Login" style="color: #FFE066;">login</a> with appropriate credentials.</p>
+    
+    <div style="margin-top: 30px;">
+        <a asp-controller="Home" asp-action="Index" class="nav">🏠 Back to Home</a>
+    </div>
+</div>

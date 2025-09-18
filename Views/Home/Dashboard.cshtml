@@ -1,0 +1,61 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h1>🎛️ Admin Dashboard</h1>
+
+<div class="status" style="background: rgba(76, 175, 80, 0.3); border: 1px solid rgba(76, 175, 80, 0.5);">
+    ✅ Welcome back, <strong>@ViewBag.CurrentUser</strong>! You are successfully authenticated.
+</div>
+
+<div class="info-grid">
+    <div class="info-card">
+        <h3>👤 User Information</h3>
+        <p><strong>Username:</strong> @ViewBag.CurrentUser</p>
+        <p><strong>Login Time:</strong> @ViewBag.LoginTime</p>
+        <p><strong>Role:</strong> Administrator</p>
+    </div>
+    
+    <div class="info-card">
+        <h3>🕒 Server Time</h3>
+        <p>@ViewBag.ServerTime</p>
+    </div>
+    
+    <div class="info-card">
+        <h3>💻 Machine Name</h3>
+        <p>@ViewBag.MachineName</p>
+    </div>
+    
+    <div class="info-card">
+        <h3>👤 Service Context</h3>
+        <p>@ViewBag.UserName</p>
+    </div>
+    
+    <div class="info-card">
+        <h3>🖥️ Operating System</h3>
+        <p>@ViewBag.OSVersion</p>
+    </div>
+    
+    <div class="info-card">
+        <h3>⚡ .NET Version</h3>
+        <p>@ViewBag.DotNetVersion</p>
+    </div>
+</div>
+
+<div class="info-card" style="margin-top: 30px;">
+    <h3>📊 Monitoring Status</h3>
+    <p>✅ Healthcheck endpoint: <code>/api/healthcheck</code></p>
+    <p>✅ Metrics endpoint: <code>/api/metrics</code></p>
+    <p>✅ Built-in health checks: <code>/health</code></p>
+    <p style="margin-top: 15px; padding: 10px; background: rgba(255, 255, 255, 0.1); border-radius: 5px;">
+        🔄 Auto-healthcheck is running every 30 seconds to generate traces for monitoring tools like Datadog.
+    </p>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <form asp-controller="Account" asp-action="Logout" method="post" style="display: inline;">
+        <button type="submit" style="background: rgba(255, 99, 71, 0.8); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+            🚪 Logout
+        </button>
+    </form>
+</div>

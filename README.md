@@ -13,17 +13,34 @@ A demonstration ASP.NET Core application for testing IIS deployment, authenticat
 - 📦 **Self-Contained**: No external dependencies or databases
 - 🔒 **HTTP-Only**: Works without SSL certificates for testing
 
+## 📥 **FIRST: Download Required Software**
+
+**⚠️ BEFORE DEPLOYING:** You must download .NET 9.0 on your Windows server!
+
+🔗 **Go to**: [https://dotnet.microsoft.com/en-us/download/dotnet/9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)  
+📦 **Download**: "ASP.NET Core Runtime 9.0.9 - **Windows Hosting Bundle**"  
+🚀 **Install**: Run the installer, then restart IIS (`iisreset`)
+
+> 💡 **Why Hosting Bundle?** It includes .NET Runtime + ASP.NET Core Module V2 for IIS!
+
 ## 🛠️ Requirements
 
 ### On Development Machine:
-- .NET 9.0 SDK
+- .NET 9.0 SDK (from [Microsoft Downloads](https://dotnet.microsoft.com/en-us/download/dotnet/9.0))
 
 ### On Windows Server:
 - Windows Server 2016+ (or Windows 10/11)
 - IIS with ASP.NET Core Module V2
-- .NET 9.0 Runtime
+- .NET 9.0 Runtime + ASP.NET Core Hosting Bundle ⬆️ **Download Above!**
 
 ## 🚀 Quick Deployment
+
+### Step 0: Install .NET 9.0 (Required!)
+
+**🚨 If you haven't already:**
+1. **Download**: [https://dotnet.microsoft.com/en-us/download/dotnet/9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+2. **Get**: "ASP.NET Core Runtime 9.0.9 - Windows Hosting Bundle"
+3. **Install & restart IIS**: `iisreset`
 
 ### Step 1: Run Automated Deployment Script
 
@@ -142,19 +159,40 @@ IIS Directory (created by script):
 
 ### Install .NET 9.0 Runtime
 
+**📥 Download from Microsoft:**
+1. **Go to**: [https://dotnet.microsoft.com/en-us/download/dotnet/9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+2. **Download**: "ASP.NET Core Runtime 9.0.9 - Windows Hosting Bundle" 
+3. **Run the installer** (includes .NET Runtime + ASP.NET Core Module V2)
+
+**Alternative - Package Manager:**
 ```powershell
-# Download from Microsoft or use Chocolatey:
+# Using Chocolatey:
 choco install dotnet-9.0-runtime
 
-# Or download directly:
-# https://dotnet.microsoft.com/download/dotnet/9.0
+# Using winget:
+winget install Microsoft.DotNet.Runtime.9
+
+# Using winget for Hosting Bundle (recommended for IIS):
+winget install Microsoft.DotNet.HostingBundle.9
 ```
+
+**⚠️ For IIS deployment, you MUST use the "Windows Hosting Bundle" which includes the ASP.NET Core Module V2!**
 
 ### Install ASP.NET Core Module V2
 
+**✅ Included with Hosting Bundle** - If you downloaded the Windows Hosting Bundle above, you already have this!
+
+**Manual Download (if needed):**
 ```powershell
-# Download ASP.NET Core Module V2 for IIS
-# https://dotnet.microsoft.com/permalink/dotnetcore-current-windows-runtime-bundle-installer
+# The Hosting Bundle from https://dotnet.microsoft.com/en-us/download/dotnet/9.0
+# includes the ASP.NET Core Module V2 automatically
+```
+
+**Verify Installation:**
+```powershell
+# Check if module is installed
+Import-Module WebAdministration
+Get-IISConfigSection -SectionPath "system.webServer/modules" | Get-IISConfigElement -ChildElementName "add" | Where-Object {$_.name -like "*AspNetCore*"}
 ```
 
 ### Enable IIS Features
@@ -277,6 +315,7 @@ Follow this step-by-step lab to deploy the SimpleIISApp to IIS and troubleshoot 
 - ✅ Windows Server 2016+ or Windows 10/11
 - ✅ Administrative access
 - ✅ Internet connection for downloads
+- ✅ **.NET 9.0 downloaded and installed** from [https://dotnet.microsoft.com/en-us/download/dotnet/9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) (Windows Hosting Bundle)
 
 ---
 
@@ -420,8 +459,8 @@ Module: IIS Web Core
 
 **Solution:**
 1. **Download .NET 9.0 Windows Hosting Bundle:**
-   - Go to: https://dotnet.microsoft.com/download/dotnet/9.0
-   - Download: "ASP.NET Core Runtime 9.0.x - Windows Hosting Bundle"
+   - Go to: [https://dotnet.microsoft.com/en-us/download/dotnet/9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+   - Download: "ASP.NET Core Runtime 9.0.9 - Windows Hosting Bundle"
 
 2. **Install the bundle:**
    ```powershell

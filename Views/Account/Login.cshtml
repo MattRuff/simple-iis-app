@@ -1,0 +1,46 @@
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div style="max-width: 400px; margin: 50px auto; background: rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);">
+    <h2 style="text-align: center; margin-bottom: 30px; color: #FFE066;">🔐 Login Required</h2>
+    
+    @if (!string.IsNullOrEmpty(ViewBag.Error))
+    {
+        <div style="background: rgba(255, 0, 0, 0.2); color: white; padding: 10px; border-radius: 5px; margin-bottom: 20px; text-align: center;">
+            ❌ @ViewBag.Error
+        </div>
+    }
+
+    <form asp-action="Login" method="post">
+        <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+        
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 5px; color: white;">👤 Username:</label>
+            <input type="text" name="username" required 
+                   style="width: 100%; padding: 10px; border: none; border-radius: 5px; background: rgba(255, 255, 255, 0.9);" 
+                   placeholder="Enter username" />
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 5px; color: white;">🔑 Password:</label>
+            <input type="password" name="password" required 
+                   style="width: 100%; padding: 10px; border: none; border-radius: 5px; background: rgba(255, 255, 255, 0.9);" 
+                   placeholder="Enter password" />
+        </div>
+
+        <button type="submit" 
+                style="width: 100%; padding: 12px; background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; transition: all 0.3s ease;">
+            🚀 Login
+        </button>
+    </form>
+
+    <div style="margin-top: 30px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; border-left: 4px solid #FFE066;">
+        <h4 style="color: #FFE066; margin-top: 0;">💡 Demo Credentials</h4>
+        <p style="margin: 5px 0; color: white;"><strong>Username:</strong> admin</p>
+        <p style="margin: 5px 0; color: white;"><strong>Password:</strong> password</p>
+        <p style="margin: 10px 0 0 0; color: #ccc; font-size: 0.9em;">
+            ⚠️ This is for testing purposes only!
+        </p>
+    </div>
+</div>

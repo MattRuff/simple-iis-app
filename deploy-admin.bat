@@ -18,6 +18,11 @@ if %errorlevel% neq 0 (
 echo ✅ Running as Administrator
 echo.
 
+echo ⚠️  IMPORTANT: Ensure .NET 9.0 Hosting Bundle is installed!
+echo    Download from: https://dotnet.microsoft.com/en-us/download/dotnet/9.0
+echo    Get: "ASP.NET Core Runtime 9.0.9 - Windows Hosting Bundle"
+echo.
+
 echo [1/5] Cleaning previous builds...
 if exist "bin\Release\net9.0\publish" rmdir /s /q "bin\Release\net9.0\publish"
 echo     ✓ Cleaned

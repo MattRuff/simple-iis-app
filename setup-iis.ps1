@@ -57,11 +57,11 @@ try {
         Write-Host "     ✓ .NET 9.0 Runtime found" -ForegroundColor Green
     } else {
         Write-Host "     ⚠️  .NET 9.0 Runtime not found" -ForegroundColor Yellow
-        Write-Host "     Please install from: https://dotnet.microsoft.com/download/dotnet/9.0" -ForegroundColor Cyan
+        Write-Host "     Please install from: https://dotnet.microsoft.com/en-us/download/dotnet/9.0" -ForegroundColor Cyan
     }
 } catch {
     Write-Host "     ⚠️  .NET not found or not in PATH" -ForegroundColor Yellow
-    Write-Host "     Please install .NET 9.0 Runtime from: https://dotnet.microsoft.com/download/dotnet/9.0" -ForegroundColor Cyan
+    Write-Host "     Please install .NET 9.0 Runtime from: https://dotnet.microsoft.com/en-us/download/dotnet/9.0" -ForegroundColor Cyan
 }
 
 # Step 3: Check ASP.NET Core Module
@@ -111,7 +111,7 @@ Write-Host "3. Assign the 'SimpleIISAppPool' application pool to your site" -For
 Write-Host "4. Test by browsing to your site!" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "If you need to install missing components:" -ForegroundColor Yellow
-Write-Host "• .NET 9.0 Runtime: https://dotnet.microsoft.com/download/dotnet/9.0" -ForegroundColor Gray
+Write-Host "• .NET 9.0 Runtime: https://dotnet.microsoft.com/en-us/download/dotnet/9.0" -ForegroundColor Gray
 Write-Host "• ASP.NET Core Module: Included with runtime" -ForegroundColor Gray
 Write-Host ""
 
