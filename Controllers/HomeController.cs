@@ -218,6 +218,11 @@ namespace SimpleIISApp.Controllers
                 _logger.LogError(ex, "🚨 DATADOG ERROR CAPTURED - Full Stack Trace: {ExceptionType} triggered by {User} with Git SHA: {GitSha}. Stack Trace: {StackTrace}", 
                     ex.GetType().Name, user, gitSha, ex.StackTrace);
                 
+                // Add explicit Datadog span attributes for error tracking
+                // These ensure Datadog's error.stack, error.message, and error.type span attributes are set
+                _logger.LogError("🔍 DATADOG SPAN ATTRIBUTES - error.type: {ErrorType}, error.message: {ErrorMessage}, error.stack: {ErrorStack}", 
+                    ex.GetType().FullName, ex.Message, ex.StackTrace);
+                
                 // Re-throw to ensure it propagates to Datadog
                 throw;
             }

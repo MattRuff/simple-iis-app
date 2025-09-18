@@ -5,7 +5,8 @@ setlocal EnableDelayedExpansion
 if exist "logs\deploy_running.lock" (
     echo ❌ Another deployment is already running!
     echo If this is incorrect, delete: logs\deploy_running.lock
-    pause >nul
+    echo Auto-exiting in 3 seconds...
+    timeout /t 3 >nul
     exit /b 1
 )
 
@@ -133,10 +134,9 @@ if %ERRORLEVEL% neq 0 (
         powershell "Get-Content '%LOG_FILE%' | Select-String -Pattern 'error|exception|fail' -Context 2,3"
     )
     echo.
-    echo Press any key to exit...
+    echo Auto-exiting due to build failure...
     :: Clean up lock file on error
     if exist "logs\deploy_running.lock" del "logs\deploy_running.lock" >nul
-    pause >nul
     exit /b 1
 )
 call :log_and_echo "    ✓ Published"
@@ -158,10 +158,9 @@ if %ERRORLEVEL% neq 0 (
     call :log_and_echo "   Main log: %LOG_FILE%"
     call :log_and_echo "   Error log: %ERROR_LOG%"
     echo.
-    echo Press any key to exit...
+    echo Auto-exiting due to copy failure...
     :: Clean up lock file on error
     if exist "logs\deploy_running.lock" del "logs\deploy_running.lock" >nul
-    pause >nul
     exit /b 1
 )
 call :log_and_echo "    ✓ Files copied to IIS directory"
@@ -211,5 +210,5 @@ echo.
 :: Clean up lock file
 if exist "logs\deploy_running.lock" del "logs\deploy_running.lock" >nul
 
-echo Press any key to exit...
-pause >nul
+echo Script will auto-exit in 2 seconds...
+timeout /t 2 >nul

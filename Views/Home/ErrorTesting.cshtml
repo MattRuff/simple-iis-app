@@ -89,6 +89,17 @@
     </ul>
 </div>
 
+<div class="datadog-compliance" style="margin-top: 20px; padding: 20px; background: rgba(40, 167, 69, 0.1); border-radius: 10px; border-left: 4px solid #28a745;">
+    <h3>✅ Datadog Error Span Compliance</h3>
+    <p><strong>Our errors meet Datadog's tracer requirements for error span attributes:</strong></p>
+    <ul>
+        <li><strong>🔍 error.stack:</strong> Full stack traces automatically captured and logged</li>
+        <li><strong>💬 error.message:</strong> Rich, detailed error messages with business context</li>
+        <li><strong>🏷️ error.type:</strong> Specific exception types (NullReferenceException, ArgumentNullException, etc.)</li>
+    </ul>
+    <p><em>📝 Note: Datadog keeps only the top-most error per service if multiple errors are reported simultaneously.</em></p>
+</div>
+
 <div class="navigation-links" style="text-align: center; margin-top: 30px;">
     <a href="/" class="nav-link">🏠 Back to Home</a>
     <a href="/api/metrics" target="_blank" class="nav-link">📊 View Metrics</a>
