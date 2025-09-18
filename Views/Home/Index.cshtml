@@ -8,6 +8,19 @@
     ✅ Congratulations! Your ASP.NET Core application is successfully deployed on IIS.
 </div>
 
+@if (ViewBag.IsAuthenticated)
+{
+    <div class="status" style="background: rgba(76, 175, 80, 0.3); border: 1px solid rgba(76, 175, 80, 0.5); margin-top: 15px;">
+        👤 Welcome back! You are logged in. <a asp-action="Dashboard" style="color: #FFE066; text-decoration: underline;">Go to Dashboard</a>
+    </div>
+}
+else
+{
+    <div class="status" style="background: rgba(255, 193, 7, 0.3); border: 1px solid rgba(255, 193, 7, 0.5); margin-top: 15px;">
+        🔐 Want to see admin features? <a asp-controller="Account" asp-action="Login" style="color: #FFE066; text-decoration: underline;">Login here</a> (admin/password)
+    </div>
+}
+
 <div class="info-grid">
     <div class="info-card">
         <h3>🕒 Server Time</h3>
@@ -38,9 +51,24 @@
         <h3>🌐 Environment</h3>
         <p>@Html.Raw(System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production")</p>
     </div>
+
+    <div class="info-card">
+        <h3>🔐 Authentication</h3>
+        <p>@(ViewBag.IsAuthenticated ? "✅ Logged In" : "❌ Anonymous")</p>
+    </div>
+</div>
+
+<div class="info-card" style="margin-top: 30px;">
+    <h3>📊 Monitoring Endpoints</h3>
+    <p>✅ Health Check: <a href="/health" target="_blank" style="color: #FFE066;">/health</a></p>
+    <p>✅ API Health: <a href="/api/healthcheck" target="_blank" style="color: #FFE066;">/api/healthcheck</a></p>
+    <p>✅ Metrics: <a href="/api/metrics" target="_blank" style="color: #FFE066;">/api/metrics</a></p>
+    <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">
+        🔄 Auto-healthcheck runs every 30 seconds for monitoring tools like Datadog
+    </p>
 </div>
 
 <div style="text-align: center; margin-top: 30px; opacity: 0.8;">
     <p>This is a simple test application to verify IIS deployment is working correctly.</p>
-    <p>No database, no SSL certificates, no complex dependencies required!</p>
+    <p>Now includes authentication and monitoring endpoints for observability testing!</p>
 </div>

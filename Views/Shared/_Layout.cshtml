@@ -75,13 +75,78 @@
 <body>
     <div class="container">
         <nav class="nav">
-            <a asp-controller="Home" asp-action="Index">Home</a>
-            <a asp-controller="Home" asp-action="About">About</a>
+            <a asp-controller="Home" asp-action="Index">🏠 Home</a>
+            <a asp-controller="Home" asp-action="About">📋 About</a>
+            
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a asp-controller="Home" asp-action="Dashboard">🎛️ Dashboard</a>
+                <form asp-controller="Account" asp-action="Logout" method="post" style="display: inline; margin-left: 15px;">
+                    <button type="submit" style="color: white; background: rgba(255, 99, 71, 0.8); border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; transition: all 0.3s ease;">
+                        🚪 Logout
+                    </button>
+                </form>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login">🔐 Login</a>
+            }
         </nav>
         
         <main role="main">
             @RenderBody()
         </main>
+        
+        <!-- Monitoring Status Indicator -->
+        <div id="monitoring-status" style="position: fixed; top: 20px; right: 20px; background: rgba(0, 0, 0, 0.8); color: white; padding: 10px; border-radius: 10px; font-size: 0.9em; z-index: 1000;">
+            🔄 Monitoring: <span id="healthcheck-status">Starting...</span>
+        </div>
     </div>
+
+    <script>
+        // Auto-healthcheck for monitoring tools like Datadog
+        let healthcheckCount = 0;
+        
+        async function performHealthcheck() {
+            try {
+                const response = await fetch('/api/healthcheck');
+                const data = await response.json();
+                
+                healthcheckCount++;
+                document.getElementById('healthcheck-status').innerHTML = 
+                    `✅ Active (${healthcheckCount} checks)`;
+                
+                console.log('Healthcheck performed:', data);
+                
+                // Also update page title to show activity
+                if (healthcheckCount % 10 === 0) {
+                    document.title = `${document.title.split(' ')[0]} ${document.title.split(' ').slice(1).join(' ')} - ${healthcheckCount} checks`;
+                }
+                
+            } catch (error) {
+                console.error('Healthcheck failed:', error);
+                document.getElementById('healthcheck-status').innerHTML = '❌ Failed';
+            }
+        }
+        
+        // Start healthcheck immediately and then every 30 seconds
+        performHealthcheck();
+        setInterval(performHealthcheck, 30000);
+        
+        // Show startup message
+        console.log('🚀 SimpleIIS App monitoring started - healthcheck every 30 seconds');
+        console.log('📊 Monitor endpoints: /health, /api/healthcheck, /api/metrics');
+        
+        // Optional: Add metrics collection every 2 minutes
+        setInterval(async () => {
+            try {
+                const response = await fetch('/api/metrics');
+                const metrics = await response.json();
+                console.log('📊 Metrics collected:', metrics);
+            } catch (error) {
+                console.error('Metrics collection failed:', error);
+            }
+        }, 120000); // 2 minutes
+    </script>
 </body>
 </html>
