@@ -22,34 +22,77 @@ A minimal ASP.NET Core application designed for testing IIS deployment on bare W
 
 ## 🚀 Quick Deployment
 
-### Step 1: Build and Publish
+### Step 1: Run Automated Deployment Script
 
+**Option A: Admin-Checked Script (Recommended)**
 ```bash
-# Run the deployment script
-deploy.bat
-
-# OR manually:
-dotnet publish -c Release -o bin\Release\net9.0\publish
+# Right-click and "Run as administrator"
+deploy-admin.bat
 ```
 
-### Step 2: Copy to Windows Server
+**Option B: Manual Admin Check**
+```bash
+# Run Command Prompt as Administrator, then run:
+deploy.bat
+```
 
-Copy the entire `bin\Release\net9.0\publish\` folder to your Windows server.
+**What this script does:**
+- ✅ Builds the application
+- ✅ Publishes to `bin\Release\net9.0\publish`
+- ✅ Creates IIS directory: `C:\inetpub\wwwroot\SimpleIISApp`
+- ✅ Copies files to IIS directory automatically
 
-### Step 3: Configure IIS
+### Step 2: Configure IIS
 
 1. **Open IIS Manager**
 2. **Right-click "Sites"** → **"Add Website..."**
-3. **Configure:**
+3. **Configure EXACTLY as shown:**
    - **Site name**: `SimpleIISApp`
-   - **Physical path**: Point to your publish folder
-   - **Port**: `80` (or any available port)
+   - **Physical path**: `C:\inetpub\wwwroot\SimpleIISApp`
+   - **Port**: `8080` (or any available port)
    - **Binding**: HTTP (no SSL needed)
+4. **Click OK**
+
+### Step 3: Configure Application Pool
+
+1. **Click "Application Pools"** in IIS Manager
+2. **Right-click your SimpleIISApp pool** → **"Advanced Settings"**
+3. **Set .NET CLR Version**: `No Managed Code`
 4. **Click OK**
 
 ### Step 4: Test
 
-Browse to `http://your-server-ip` or `http://localhost` and you should see the welcome page!
+Browse to: `http://localhost:8080`
+
+## 📁 **CRITICAL: IIS Physical Path**
+
+🎯 **Always point IIS to**: `C:\inetpub\wwwroot\SimpleIISApp`
+
+**❌ DO NOT point to:**
+- Source folder (where code is)
+- Desktop or user folders
+- `bin\Release\net9.0\publish` (this is just the build output)
+
+**✅ DO point to:**
+- `C:\inetpub\wwwroot\SimpleIISApp` (where deploy.bat copies the files)
+
+## 📂 **Folder Structure Summary**
+
+```
+Your Project:
+├── SimpleIISApp/                    ← Source code (DON'T point IIS here)
+├── bin/Release/net9.0/publish/      ← Build output (DON'T point IIS here)
+└── deploy-admin.bat                 ← Run this script
+
+IIS Directory (created by script):
+└── C:\inetpub\wwwroot\SimpleIISApp/ ← Point IIS HERE! ✅
+    ├── SimpleIISApp.dll
+    ├── web.config
+    ├── appsettings.json
+    └── [other files...]
+```
+
+🎯 **IIS Physical Path**: `C:\inetpub\wwwroot\SimpleIISApp`
 
 ## 📋 Detailed Server Setup
 
@@ -232,7 +275,11 @@ dotnet build
 
 ### **Step 2.2: Publish for Deployment**
 ```bash
-# Run the deployment script
+# Run the admin deployment script (recommended)
+# Right-click deploy-admin.bat and "Run as administrator"
+deploy-admin.bat
+
+# OR run regular script as admin:
 deploy.bat
 
 # OR manually:
@@ -253,25 +300,32 @@ Check that these files exist in the publish folder:
 ## **Phase 3: IIS Site Configuration** 🌐
 
 ### **Step 3.1: Create IIS Application Directory**
-```powershell
-# Create standard IIS directory
-New-Item -ItemType Directory -Path "C:\inetpub\wwwroot\SimpleIISApp" -Force
+**⚠️ Run as Administrator**
 
-# Copy published files to IIS directory
-Copy-Item ".\bin\Release\net9.0\publish\*" -Destination "C:\inetpub\wwwroot\SimpleIISApp\" -Recurse -Force
+```bash
+# Right-click and "Run as administrator"
+deploy-admin.bat
+
+# OR run deploy.bat from admin command prompt
 ```
 
-**⚠️ Common Mistake:** Don't point IIS directly to your source folder or Desktop - always use the published files!
+**This automatically:**
+- Creates `C:\inetpub\wwwroot\SimpleIISApp` directory  
+- Copies published files to IIS directory
+
+**⚠️ Common Mistake:** Don't point IIS directly to your source folder or Desktop - always use `C:\inetpub\wwwroot\SimpleIISApp`!
 
 ### **Step 3.2: Create IIS Site**
 1. **Open IIS Manager**
 2. **Right-click "Sites"** → **"Add Website..."**
-3. **Configure:**
+3. **Configure EXACTLY as shown:**
    - **Site name:** `SimpleIISApp`
    - **Physical path:** `C:\inetpub\wwwroot\SimpleIISApp`
    - **Binding Type:** `http`
    - **Port:** `8080` (or any available port)
 4. **Click OK**
+
+🎯 **CRITICAL:** The physical path MUST be exactly `C:\inetpub\wwwroot\SimpleIISApp` - this is where deploy.bat copied your files!
 
 ### **Step 3.3: Configure Application Pool**
 1. **Click "Application Pools"** in IIS Manager
