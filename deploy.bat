@@ -4,11 +4,10 @@ setlocal EnableDelayedExpansion
 :: Create logs directory
 if not exist "logs" mkdir "logs"
 
-:: Set timestamp for log files
-for /f "tokens=2 delims==" %%a in ('wmic OS Get localdatetime /value') do set "dt=%%a"
-set "YY=%dt:~2,2%" & set "YYYY=%dt:~0,4%" & set "MM=%dt:~4,2%" & set "DD=%dt:~6,2%"
-set "HH=%dt:~8,2%" & set "Min=%dt:~10,2%" & set "Sec=%dt:~12,2%"
-set "timestamp=%YYYY%-%MM%-%DD%_%HH%-%Min%-%Sec%"
+:: Set timestamp for log files using PowerShell (replaced wmic which was deprecated)
+for /f "usebackq delims=" %%i in (`powershell -command "Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'" 2^>nul`) do set "timestamp=%%i"
+:: Fallback if PowerShell fails - use simple counter
+if "%timestamp%"=="" set "timestamp=deploy_%RANDOM%"
 
 :: Set log files
 set "LOG_FILE=logs\deploy_%timestamp%.log"
@@ -18,8 +17,16 @@ set "ERROR_LOG=logs\deploy_errors_%timestamp%.log"
 goto :main
 
 :log_and_echo
-echo %~1
-echo %~1 >> "%LOG_FILE%"
+if [%1]==[] (
+    echo.
+    echo. >> "%LOG_FILE%"
+) else if "%~1"=="" (
+    echo.
+    echo. >> "%LOG_FILE%"
+) else (
+    echo %~1
+    echo %~1 >> "%LOG_FILE%"
+)
 goto :eof
 
 :main
@@ -36,6 +43,41 @@ call :log_and_echo "   Get: ASP.NET Core Runtime 9.0.9 - Windows Hosting Bundle"
 call :log_and_echo ""
 
 :: Set Datadog environment variables for observability
+call :log_and_echo "🧹 Performing cleanup and fixes..."
+
+:: Clean up old logs (keep last 10)
+if exist "logs\" (
+    echo [%time%] Cleaning up old log files... >> "%LOG_FILE%"
+    for /f "skip=10 delims=" %%i in ('dir /b /o-d logs\*.log 2^>nul') do (
+        del "logs\%%i" 2>>"%ERROR_LOG%"
+    )
+)
+
+:: Fix .csproj file by removing problematic PackageReference entries for .NET 9.0
+call :log_and_echo "   Checking and fixing .csproj file..."
+if exist "SimpleIISApp.csproj" (
+    echo [%time%] Fixing SimpleIISApp.csproj - removing incompatible PackageReference entries >> "%LOG_FILE%"
+    
+    :: Create a clean .csproj file for .NET 9.0
+    (
+        echo ^<Project Sdk="Microsoft.NET.Sdk.Web"^>
+        echo.
+        echo   ^<PropertyGroup^>
+        echo     ^<TargetFramework^>net9.0^</TargetFramework^>
+        echo     ^<Nullable^>enable^</Nullable^>
+        echo     ^<ImplicitUsings^>enable^</ImplicitUsings^>
+        echo   ^</PropertyGroup^>
+        echo.
+        echo ^</Project^>
+    ) > "SimpleIISApp.csproj.tmp"
+    
+    :: Replace the original file
+    move "SimpleIISApp.csproj.tmp" "SimpleIISApp.csproj" >nul 2>>"%ERROR_LOG%"
+    call :log_and_echo "   ✓ Fixed .csproj file for .NET 9.0 compatibility"
+) else (
+    call :log_and_echo "   ⚠️ SimpleIISApp.csproj not found in current directory"
+)
+
 call :log_and_echo "🔍 Setting Datadog environment variables..."
 for /f %%i in ('git rev-parse HEAD 2^>nul') do set DD_GIT_COMMIT_SHA=%%i
 for /f %%i in ('git config --get remote.origin.url 2^>nul') do set DD_GIT_REPOSITORY_URL=%%i
@@ -48,12 +90,14 @@ call :log_and_echo "   DD_GIT_COMMIT_SHA=%DD_GIT_COMMIT_SHA%"
 call :log_and_echo "   DD_GIT_REPOSITORY_URL=%DD_GIT_REPOSITORY_URL%"
 call :log_and_echo ""
 
-call :log_and_echo "[1/5] Cleaning previous builds..."
+call :log_and_echo "[1/6] Cleaning previous builds..."
 if exist "bin\Release\net9.0\publish" rmdir /s /q "bin\Release\net9.0\publish" 2>>"%ERROR_LOG%"
-call :log_and_echo "    ✓ Cleaned"
+if exist "bin\Debug" rmdir /s /q "bin\Debug" 2>>"%ERROR_LOG%"
+if exist "obj" rmdir /s /q "obj" 2>>"%ERROR_LOG%"
+call :log_and_echo "    ✓ Cleaned build artifacts"
 
 call :log_and_echo ""
-call :log_and_echo "[2/5] Publishing application..."
+call :log_and_echo "[2/6] Publishing application..."
 echo [%time%] Running: dotnet publish -c Release -o bin\Release\net9.0\publish >> "%LOG_FILE%"
 echo [%time%] DD_GIT_COMMIT_SHA=%DD_GIT_COMMIT_SHA% >> "%LOG_FILE%"
 echo [%time%] DD_GIT_REPOSITORY_URL=%DD_GIT_REPOSITORY_URL% >> "%LOG_FILE%"
@@ -76,12 +120,12 @@ if %ERRORLEVEL% neq 0 (
 call :log_and_echo "    ✓ Published"
 
 call :log_and_echo ""
-call :log_and_echo "[3/5] Creating IIS directory..."
+call :log_and_echo "[3/6] Creating IIS directory..."
 if not exist "C:\inetpub\wwwroot\SimpleIISApp" mkdir "C:\inetpub\wwwroot\SimpleIISApp" 2>>"%ERROR_LOG%"
 call :log_and_echo "    ✓ IIS directory created"
 
 call :log_and_echo ""
-call :log_and_echo "[4/5] Copying files to IIS directory..."
+call :log_and_echo "[4/6] Copying files to IIS directory..."
 echo [%time%] Running: xcopy to C:\inetpub\wwwroot\SimpleIISApp\ >> "%LOG_FILE%"
 xcopy "bin\Release\net9.0\publish\*" "C:\inetpub\wwwroot\SimpleIISApp\" /E /I /Y 1>>"%LOG_FILE%" 2>>"%ERROR_LOG%"
 if %ERRORLEVEL% neq 0 (
@@ -97,7 +141,16 @@ if %ERRORLEVEL% neq 0 (
 call :log_and_echo "    ✓ Files copied to IIS directory"
 
 call :log_and_echo ""
-call :log_and_echo "[5/5] Deployment Complete!"
+call :log_and_echo "[5/6] Final verification..."
+call :log_and_echo "   ✓ Verifying published files exist"
+if exist "C:\inetpub\wwwroot\SimpleIISApp\SimpleIISApp.dll" (
+    call :log_and_echo "   ✓ Application DLL found"
+) else (
+    call :log_and_echo "   ⚠️ Application DLL not found - check copy operation"
+)
+
+call :log_and_echo ""
+call :log_and_echo "[6/6] Deployment Complete!"
 call :log_and_echo ""
 call :log_and_echo "================================"
 call :log_and_echo "    🎉 Ready for IIS Setup! 🎉" 

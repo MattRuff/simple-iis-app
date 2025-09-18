@@ -1,0 +1,211 @@
+@{
+    ViewData["Title"] = "Error Testing - Datadog Monitoring";
+}
+
+<h1>🧪 Error Testing for Datadog Monitoring</h1>
+
+<div class="alert alert-warning" style="background: rgba(255, 193, 7, 0.2); border: 1px solid #ffc107; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+    <strong>⚠️ Warning:</strong> This page intentionally triggers real application errors for testing Datadog error monitoring and alerting systems.
+    Only use this in development or testing environments!
+</div>
+
+<div class="error-testing-grid">
+    <div class="error-test-card">
+        <h3>🔍 Null Reference Exception</h3>
+        <p>Tests handling of null reference errors - common in production systems.</p>
+        <button onclick="triggerError('nullreference')" class="test-error-btn">Trigger Null Reference</button>
+        <small>Simulates accessing properties on null objects</small>
+    </div>
+
+    <div class="error-test-card">
+        <h3>➗ Divide by Zero Exception</h3>
+        <p>Tests mathematical exception handling - arithmetic errors.</p>
+        <button onclick="triggerError('dividebyzero')" class="test-error-btn">Trigger Divide by Zero</button>
+        <small>Simulates division by zero operations</small>
+    </div>
+
+    <div class="error-test-card">
+        <h3>📦 Argument Null Exception</h3>
+        <p>Tests parameter validation errors - API input validation.</p>
+        <button onclick="triggerError('argumentnull')" class="test-error-btn">Trigger Argument Null</button>
+        <small>Simulates null parameter passed to methods</small>
+    </div>
+
+    <div class="error-test-card">
+        <h3>🚫 Invalid Operation Exception</h3>
+        <p>Tests operation state errors - business logic violations.</p>
+        <button onclick="triggerError('invalidoperation')" class="test-error-btn">Trigger Invalid Operation</button>
+        <small>Simulates operations on empty collections</small>
+    </div>
+
+    <div class="error-test-card">
+        <h3>📊 Index Out of Range Exception</h3>
+        <p>Tests array/collection boundary errors - data access issues.</p>
+        <button onclick="triggerError('outofrange')" class="test-error-btn">Trigger Out of Range</button>
+        <small>Simulates accessing invalid array indices</small>
+    </div>
+
+    <div class="error-test-card">
+        <h3>⏱️ Timeout Exception</h3>
+        <p>Tests timeout handling - network and service timeouts.</p>
+        <button onclick="triggerError('timeout')" class="test-error-btn">Trigger Timeout</button>
+        <small>Simulates operation timeout scenarios</small>
+    </div>
+
+    <div class="error-test-card">
+        <h3>🎯 Custom Application Error</h3>
+        <p>Tests custom business logic errors - application-specific exceptions.</p>
+        <button onclick="triggerError('custom')" class="test-error-btn">Trigger Custom Error</button>
+        <small>Simulates custom application exceptions</small>
+    </div>
+
+    <div class="error-test-card">
+        <h3>❓ Generic Exception</h3>
+        <p>Tests general error handling - catch-all error scenarios.</p>
+        <button onclick="triggerError('exception')" class="test-error-btn">Trigger Generic Error</button>
+        <small>Simulates general application exceptions</small>
+    </div>
+</div>
+
+<div class="monitoring-info" style="margin-top: 30px; padding: 20px; background: rgba(0, 123, 255, 0.1); border-radius: 10px;">
+    <h3>📊 What to Monitor in Datadog</h3>
+    <ul>
+        <li><strong>Error Logs:</strong> Check for exception details and stack traces</li>
+        <li><strong>Error Rate:</strong> Monitor the application error rate spikes</li>
+        <li><strong>Alerts:</strong> Verify that error alerts are triggered</li>
+        <li><strong>Traces:</strong> Look for distributed traces showing error propagation</li>
+        <li><strong>Git Context:</strong> Errors include git commit SHA for deployment tracking</li>
+        <li><strong>User Context:</strong> Errors include user information for debugging</li>
+    </ul>
+</div>
+
+<div class="navigation-links" style="text-align: center; margin-top: 30px;">
+    <a href="/" class="nav-link">🏠 Back to Home</a>
+    <a href="/api/metrics" target="_blank" class="nav-link">📊 View Metrics</a>
+    <a href="/api/git-info" target="_blank" class="nav-link">🔍 Git Info</a>
+</div>
+
+<style>
+    .error-testing-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin: 20px 0;
+    }
+    
+    .error-test-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+    
+    .error-test-card h3 {
+        margin-bottom: 10px;
+        font-size: 1.2em;
+    }
+    
+    .error-test-card p {
+        margin-bottom: 15px;
+        opacity: 0.9;
+    }
+    
+    .test-error-btn {
+        background: #fff;
+        color: #667eea;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        margin-bottom: 10px;
+        width: 100%;
+    }
+    
+    .test-error-btn:hover {
+        background: #f8f9fa;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .error-test-card small {
+        display: block;
+        font-size: 0.8em;
+        opacity: 0.7;
+    }
+    
+    .nav-link {
+        display: inline-block;
+        margin: 0 10px;
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background 0.3s ease;
+    }
+    
+    .nav-link:hover {
+        background: #0056b3;
+        color: white;
+        text-decoration: none;
+    }
+</style>
+
+<script>
+function triggerError(errorType) {
+    const errorNames = {
+        'nullreference': 'Null Reference Exception',
+        'dividebyzero': 'Divide by Zero Exception',
+        'argumentnull': 'Argument Null Exception',
+        'invalidoperation': 'Invalid Operation Exception',
+        'outofrange': 'Index Out of Range Exception',
+        'timeout': 'Timeout Exception',
+        'custom': 'Custom Application Exception',
+        'exception': 'Generic Exception'
+    };
+    
+    const errorName = errorNames[errorType] || 'Unknown Error';
+    const confirmed = confirm(`⚠️ This will trigger a real ${errorName} for Datadog testing.\n\nThis will:\n• Generate error logs\n• Trigger Datadog alerts\n• Create error traces\n• Include git commit info\n\nContinue?`);
+    
+    if (!confirmed) return;
+    
+    console.log(`🚨 Triggering ${errorName} for Datadog testing...`);
+    
+    // Show loading state
+    const button = event.target;
+    const originalText = button.textContent;
+    button.textContent = '🔄 Triggering...';
+    button.disabled = true;
+    
+    fetch('/api/trigger-error', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `errorType=${errorType}`
+    })
+    .then(response => {
+        // Reset button
+        button.textContent = originalText;
+        button.disabled = false;
+        
+        if (!response.ok) {
+            console.error(`✅ ${errorName} successfully triggered: ${response.status} ${response.statusText}`);
+            alert(`✅ ${errorName} triggered successfully!\n\nStatus: ${response.status} ${response.statusText}\n\nCheck Datadog for:\n• Error logs and stack traces\n• Error rate monitoring\n• Alert notifications\n• Distributed traces`);
+        }
+        return response.text();
+    })
+    .catch(error => {
+        // Reset button
+        button.textContent = originalText;
+        button.disabled = false;
+        
+        console.error(`✅ ${errorName} successfully triggered:`, error);
+        alert(`✅ ${errorName} triggered successfully!\n\nError: ${error.message}\n\nCheck Datadog for:\n• Error logs and stack traces\n• Error rate monitoring\n• Alert notifications\n• Distributed traces`);
+    });
+}
+</script>
