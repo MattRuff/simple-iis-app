@@ -1,11 +1,13 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
 // Add authentication services
-builder.Services.AddAuthentication("Cookies")
-    .AddCookie("Cookies", options =>
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
     {
         options.LoginPath = "/Account/Login";
         options.LogoutPath = "/Account/Logout";
@@ -18,6 +20,14 @@ builder.Services.AddAuthentication("Cookies")
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
+
+// Log Datadog environment variables for observability
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+var gitCommitSha = Environment.GetEnvironmentVariable("DD_GIT_COMMIT_SHA") ?? "unknown";
+var gitRepositoryUrl = Environment.GetEnvironmentVariable("DD_GIT_REPOSITORY_URL") ?? "unknown";
+
+logger.LogInformation("🔍 Datadog Git Info - Commit SHA: {CommitSha}", gitCommitSha);
+logger.LogInformation("🔍 Datadog Git Info - Repository URL: {RepositoryUrl}", gitRepositoryUrl);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

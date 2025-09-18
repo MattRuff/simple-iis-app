@@ -56,13 +56,73 @@ else
         <h3>🔐 Authentication</h3>
         <p>@(ViewBag.IsAuthenticated ? "✅ Logged In" : "❌ Anonymous")</p>
     </div>
+    
+    <div class="info-card" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white;">
+        <h3>⚠️ Error Testing for Datadog</h3>
+        <p>Test error monitoring and alerting:</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0;">
+            <button onclick="triggerError('nullreference')" class="error-btn">Null Reference</button>
+            <button onclick="triggerError('dividebyzero')" class="error-btn">Divide by Zero</button>
+            <button onclick="triggerError('outofrange')" class="error-btn">Out of Range</button>
+            <button onclick="triggerError('custom')" class="error-btn">Custom Error</button>
+        </div>
+        <p><a href="/Home/ErrorTesting" style="color: #fff; text-decoration: underline;">🧪 Full Error Testing Page</a></p>
+        <p><em style="font-size: 0.9em;">These trigger real exceptions for Datadog monitoring testing</em></p>
+    </div>
 </div>
+
+<style>
+    .error-btn {
+        background: #fff;
+        color: #ee5a24;
+        border: 2px solid #fff;
+        padding: 8px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    .error-btn:hover {
+        background: #ee5a24;
+        color: #fff;
+        transform: translateY(-2px);
+    }
+</style>
+
+<script>
+function triggerError(errorType) {
+    const confirmed = confirm(`⚠️ This will trigger a real ${errorType} error for Datadog testing. Continue?`);
+    if (!confirmed) return;
+    
+    console.log(`🚨 Triggering ${errorType} error for Datadog testing...`);
+    
+    fetch('/api/trigger-error', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `errorType=${errorType}`
+    })
+    .then(response => {
+        if (!response.ok) {
+            console.error(`✅ Error successfully triggered: ${response.status} ${response.statusText}`);
+            alert(`✅ Error triggered! Check Datadog for error logs and alerts.\nStatus: ${response.status} ${response.statusText}`);
+        }
+        return response.text();
+    })
+    .catch(error => {
+        console.error('✅ Error successfully triggered:', error);
+        alert(`✅ Error triggered! Check Datadog for error logs and alerts.\nError: ${error.message}`);
+    });
+}
+</script>
 
 <div class="info-card" style="margin-top: 30px;">
     <h3>📊 Monitoring Endpoints</h3>
     <p>✅ Health Check: <a href="/health" target="_blank" style="color: #FFE066;">/health</a></p>
     <p>✅ API Health: <a href="/api/healthcheck" target="_blank" style="color: #FFE066;">/api/healthcheck</a></p>
     <p>✅ Metrics: <a href="/api/metrics" target="_blank" style="color: #FFE066;">/api/metrics</a></p>
+    <p>✅ Git Info: <a href="/api/git-info" target="_blank" style="color: #FFE066;">/api/git-info</a></p>
     <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">
         🔄 Auto-healthcheck runs every 30 seconds for monitoring tools like Datadog
     </p>
