@@ -419,15 +419,14 @@ dotnet publish -c Release -o bin\Release\net9.0\publish
 - ✅ **Version tracking** - each deployment gets a unique version number
 
 **What the Enhanced Scripts Do:**
-1. **[1/9] Stop IIS Application:** Release file locks by stopping application pools
-2. **[2/9] Clean Environment:** Remove old files from `C:\inetpub\wwwroot\SimpleIISApp`
-3. **[3/9] Build & Publish:** Compile application with .NET 9.0
-4. **[4/9] Create IIS Directory:** Ensure deployment target exists
-5. **[5/9] Deploy to IIS:** Copy files to IIS directory
-6. **[6/9] Create IIS Application:** **NEW!** Automatically create application pool and website if they don't exist
-7. **[7/9] Verify Deployment:** Check files deployed correctly
-8. **[8/9] Restart IIS:** Perform clean restart for immediate changes  
-9. **[9/9] Complete:** Show deployment version and success message
+1. **[1/8] Stop IIS Application:** Release file locks by stopping application pools
+2. **[2/8] Clean Environment & Create Directory:** Remove old files, verify IIS installation, and create `C:\inetpub\wwwroot\SimpleIISApp` with robust error checking
+3. **[3/8] Build & Publish:** Compile application with .NET 9.0
+4. **[4/8] Deploy to IIS:** Copy files to IIS directory
+5. **[5/8] Create IIS Application:** **AUTOMATED!** Automatically create application pool and website if they don't exist
+6. **[6/8] Verify Deployment:** Check files deployed correctly
+7. **[7/8] Restart IIS:** Perform clean restart for immediate changes  
+8. **[8/8] Complete:** Show deployment version and success message
 
 ### **Step 2.3: Verify Published Files**
 Check that these files exist in the publish folder:

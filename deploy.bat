@@ -208,6 +208,25 @@ if exist "C:\inetpub\wwwroot\SimpleIISApp" (
     call :log_and_echo "    ✓ IIS directory was already clean"
 )
 
+call :log_and_echo "    📁 Creating IIS directory..."
+if not exist "C:\inetpub\wwwroot" (
+    call :log_and_echo "    ❌ C:\inetpub\wwwroot does not exist! IIS may not be installed properly."
+    :: Clean up lock file on error
+    if exist "logs\deploy_running.lock" del "logs\deploy_running.lock" >nul
+    exit /b 1
+)
+
+mkdir "C:\inetpub\wwwroot\SimpleIISApp" 2>>"%ERROR_LOG%"
+if not exist "C:\inetpub\wwwroot\SimpleIISApp" (
+    call :log_and_echo "    ❌ Failed to create C:\inetpub\wwwroot\SimpleIISApp directory!"
+    call :log_and_echo "    This usually means you need to run as Administrator."
+    :: Clean up lock file on error
+    if exist "logs\deploy_running.lock" del "logs\deploy_running.lock" >nul
+    exit /b 1
+) else (
+    call :log_and_echo "    ✓ IIS directory created successfully"
+)
+
 call :log_and_echo ""
 call :log_and_echo "[3/8] Publishing application..."
 echo [%time%] Running: dotnet publish -c Release -o bin\Release\net9.0\publish --verbosity detailed >> "%LOG_FILE%"
@@ -244,12 +263,7 @@ if %ERRORLEVEL% neq 0 (
 call :log_and_echo "    ✓ Published"
 
 call :log_and_echo ""
-call :log_and_echo "[4/8] Creating IIS directory..."
-if not exist "C:\inetpub\wwwroot\SimpleIISApp" mkdir "C:\inetpub\wwwroot\SimpleIISApp" 2>>"%ERROR_LOG%"
-call :log_and_echo "    ✓ IIS directory created"
-
-call :log_and_echo ""
-call :log_and_echo "[5/8] Copying files to IIS directory..."
+call :log_and_echo "[4/8] Copying files to IIS directory..."
 echo [%time%] Running: xcopy to C:\inetpub\wwwroot\SimpleIISApp\ >> "%LOG_FILE%"
 xcopy "bin\Release\net9.0\publish\*" "C:\inetpub\wwwroot\SimpleIISApp\" /E /I /Y 1>>"%LOG_FILE%" 2>>"%ERROR_LOG%"
 if %ERRORLEVEL% neq 0 (
@@ -268,7 +282,7 @@ if %ERRORLEVEL% neq 0 (
 call :log_and_echo "    ✓ Files copied to IIS directory"
 
 call :log_and_echo ""
-call :log_and_echo "[6/9] Creating IIS application and application pool..."
+call :log_and_echo "[5/8] Creating IIS application and application pool..."
 call :log_and_echo "    🔧 Checking if SimpleIISApp application pool exists..."
 
 :: Check if application pool exists, create if not
@@ -282,7 +296,7 @@ powershell -Command "if (-not (Get-IISSite -Name 'SimpleIISApp' -ErrorAction Sil
 call :log_and_echo "    ✅ IIS application and application pool configured"
 
 call :log_and_echo ""
-call :log_and_echo "[7/9] Final verification..."
+call :log_and_echo "[6/8] Final verification..."
 call :log_and_echo "   ✓ Verifying published files exist"
 if exist "C:\inetpub\wwwroot\SimpleIISApp\SimpleIISApp.dll" (
     call :log_and_echo "   ✓ Application DLL found"
@@ -291,7 +305,7 @@ if exist "C:\inetpub\wwwroot\SimpleIISApp\SimpleIISApp.dll" (
 )
 
 call :log_and_echo ""
-call :log_and_echo "[8/9] Restarting IIS..."
+call :log_and_echo "[7/8] Restarting IIS..."
 call :log_and_echo "   🔄 Performing IIS restart for clean deployment..."
 iisreset >nul 2>>"%ERROR_LOG%"
 if %ERRORLEVEL% neq 0 (
@@ -302,7 +316,7 @@ if %ERRORLEVEL% neq 0 (
 )
 
 call :log_and_echo ""
-call :log_and_echo "[9/9] Deployment Complete!"
+call :log_and_echo "[8/8] Deployment Complete!"
 call :log_and_echo ""
 call :log_and_echo "================================"
 call :log_and_echo "    🎉 Ready for IIS Setup! 🎉" 
