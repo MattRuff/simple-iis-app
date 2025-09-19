@@ -140,6 +140,9 @@ namespace SimpleIISApp.Controllers
         [HttpPost("/api/trigger-error")]
         public IActionResult TriggerError(string errorType = "exception")
         {
+            _logger.LogInformation("🔍 DEBUG: TriggerError called with errorType: {ErrorType}", errorType);
+            Console.WriteLine($"🔍 DEBUG: TriggerError called with errorType: {errorType}");
+            
             var gitSha = Environment.GetEnvironmentVariable("DD_GIT_COMMIT_SHA") ?? "unknown";
             var user = User.Identity?.Name ?? "Anonymous";
             var timestamp = DateTime.UtcNow;
@@ -148,6 +151,7 @@ namespace SimpleIISApp.Controllers
             
             _logger.LogWarning("🚨 INTENTIONAL ERROR TRIGGER - User: {User}, Type: {ErrorType}, Git SHA: {GitSha}, Timestamp: {Timestamp}, IP: {ClientIp}, UserAgent: {UserAgent}", 
                 user, errorType, gitSha, timestamp, clientIp, userAgent);
+            Console.WriteLine($"🚨 INTENTIONAL ERROR TRIGGER - User: {user}, Type: {errorType}");
 
             try
             {
@@ -155,8 +159,11 @@ namespace SimpleIISApp.Controllers
                 {
                     case "nullreference":
                         _logger.LogError("🔥 STACK TRACE TEST: Triggering NullReferenceException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
+                        Console.WriteLine("🔍 DEBUG: About to trigger NullReferenceException");
                         string nullString = null;
+                        Console.WriteLine("🔍 DEBUG: nullString is null, about to access .Length");
                         int length = nullString.Length; // This will throw NullReferenceException
+                        Console.WriteLine("🔍 DEBUG: This line should never be reached");
                         throw new InvalidOperationException("This should never be reached");
 
                     case "argumentnull":
@@ -218,6 +225,8 @@ namespace SimpleIISApp.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"🔍 DEBUG: Exception caught! Type: {ex.GetType().Name}, Message: {ex.Message}");
+                
                 // Log the full exception with stack trace before re-throwing
                 _logger.LogError(ex, "🚨 DATADOG ERROR CAPTURED - Full Stack Trace: {ExceptionType} triggered by {User} with Git SHA: {GitSha}. Stack Trace: {StackTrace}", 
                     ex.GetType().Name, user, gitSha, ex.StackTrace);
@@ -227,9 +236,41 @@ namespace SimpleIISApp.Controllers
                 _logger.LogError("🔍 DATADOG SPAN ATTRIBUTES - error.type: {ErrorType}, error.message: {ErrorMessage}, error.stack: {ErrorStack}", 
                     ex.GetType().FullName, ex.Message, ex.StackTrace);
                 
+                Console.WriteLine($"🔍 DEBUG: About to re-throw exception: {ex.GetType().Name}");
+                
                 // Re-throw to ensure it propagates to Datadog
                 throw;
             }
+        }
+
+        // Simple test endpoint to verify exceptions work
+        [HttpGet("/api/simple-error-test")]
+        public IActionResult SimpleErrorTest()
+        {
+            _logger.LogInformation("🔍 DEBUG: SimpleErrorTest called - about to throw exception");
+            Console.WriteLine("🔍 DEBUG: SimpleErrorTest called - about to throw exception");
+            
+            // This should definitely throw an exception
+            throw new Exception("SIMPLE TEST: This is a basic exception for testing!");
+        }
+
+        // Super simple test that just throws immediately (GET request, no parameters)
+        [HttpGet("/test-exception")]
+        public string TestException()
+        {
+            // Log to see if this method is even called
+            Console.WriteLine("🔍 DEBUG: TestException endpoint called!");
+            
+            // This should show a detailed stack trace like the Datadog example
+            throw new InvalidOperationException("Price can't be less than 0 - Testing stack trace like Datadog example");
+        }
+
+        // Test endpoint that returns before throwing to verify routing works
+        [HttpGet("/test-working")]
+        public string TestWorking()
+        {
+            Console.WriteLine("🔍 DEBUG: TestWorking endpoint called successfully!");
+            return "✅ This endpoint works! If you see this, routing and controllers are working.";
         }
 
         // Error testing page
