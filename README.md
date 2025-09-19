@@ -129,6 +129,43 @@ IIS Directory (created by script):
     └── [other files...]
 ```
 
+## 🔗 **Git vs ZIP Download Configuration**
+
+### **If You Downloaded as ZIP File (Most Common):**
+
+The deployment scripts automatically detect this and use deployment-based Git information:
+
+- ✅ **Repository URL**: `https://github.com/MattRuff/simple-iis-app.git`
+- ✅ **Commit SHA**: `zip-download-[timestamp]`
+- ✅ **Branch**: `main-download`
+- ✅ **Message**: `Deployed from ZIP download at [date/time]`
+
+### **Manual Git Configuration (Optional):**
+
+If you know the specific commit SHA you downloaded, you can set it manually at the top of the batch files:
+
+**In `deploy.bat` or `deploy-admin.bat`, uncomment and edit these lines:**
+
+```batch
+:: set MANUAL_GIT_COMMIT_SHA=abc123def456789...
+:: set MANUAL_GIT_BRANCH=main
+:: set MANUAL_GIT_COMMIT_MESSAGE=Your commit message here
+```
+
+**Example:**
+```batch
+set MANUAL_GIT_COMMIT_SHA=a1b2c3d4e5f6789012345678901234567890abcd
+set MANUAL_GIT_BRANCH=main
+set MANUAL_GIT_COMMIT_MESSAGE=Add enhanced error testing and Datadog tracking
+```
+
+### **If You Cloned with Git:**
+
+The scripts automatically extract real Git information:
+- ✅ **Auto-detects** commit SHA, branch, and commit message
+- ✅ **Works with** any Git repository state
+- ✅ **Updates dynamically** with each deployment
+
 🎯 **IIS Physical Path**: `C:\inetpub\wwwroot\SimpleIISApp`
 
 ## 🔐 **Authentication & Features**
@@ -369,7 +406,20 @@ deploy.bat
 dotnet publish -c Release -o bin\Release\net9.0\publish
 ```
 
-**Expected Result:** Published files in `bin\Release\net9.0\publish\` folder
+**Expected Result:** 
+- ✅ Published files in `bin\Release\net9.0\publish\` folder
+- ✅ **Clean IIS deployment** - old files removed automatically
+- ✅ **Automatic IIS restart** for fresh deployment
+- ✅ **Version tracking** - each deployment gets a unique version number
+
+**What the Enhanced Scripts Do:**
+1. **[1/7] Clean Environment:** Remove old files from `C:\inetpub\wwwroot\SimpleIISApp`
+2. **[2/7] Build & Publish:** Compile application with .NET 9.0
+3. **[3/7] Create IIS Directory:** Ensure deployment target exists
+4. **[4/7] Deploy to IIS:** Copy files to IIS directory
+5. **[5/7] Verify Deployment:** Check files deployed correctly
+6. **[6/7] Restart IIS:** Perform clean restart for immediate changes  
+7. **[7/7] Complete:** Show deployment version and success message
 
 ### **Step 2.3: Verify Published Files**
 Check that these files exist in the publish folder:

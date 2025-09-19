@@ -8,6 +8,17 @@
     ✅ Congratulations! Your ASP.NET Core application is successfully deployed on IIS.
 </div>
 
+<div class="deployment-info" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; margin: 15px 0; text-align: center;">
+    <h3 style="margin: 0 0 10px 0;">🚀 Deployment Information</h3>
+    <p style="margin: 5px 0;">
+        <strong>Version:</strong> @Environment.GetEnvironmentVariable("DD_DEPLOYMENT_VERSION") | 
+        <strong>Deployed:</strong> @Environment.GetEnvironmentVariable("DD_DEPLOYMENT_TIME")
+    </p>
+    <p style="margin: 5px 0; font-size: 0.9em; opacity: 0.8;">
+        <strong>Git:</strong> @Environment.GetEnvironmentVariable("DD_GIT_BRANCH") @ @(Environment.GetEnvironmentVariable("DD_GIT_COMMIT_SHA_SHORT"))
+    </p>
+</div>
+
 @if (ViewBag.IsAuthenticated)
 {
     <div class="status" style="background: rgba(76, 175, 80, 0.3); border: 1px solid rgba(76, 175, 80, 0.5); margin-top: 15px;">

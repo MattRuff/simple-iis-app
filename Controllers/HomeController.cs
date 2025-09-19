@@ -106,7 +106,16 @@ namespace SimpleIISApp.Controllers
                 Git = new
                 {
                     CommitSha = Environment.GetEnvironmentVariable("DD_GIT_COMMIT_SHA") ?? "unknown",
-                    RepositoryUrl = Environment.GetEnvironmentVariable("DD_GIT_REPOSITORY_URL") ?? "unknown"
+                    CommitShaShort = Environment.GetEnvironmentVariable("DD_GIT_COMMIT_SHA_SHORT") ?? "unknown", 
+                    Branch = Environment.GetEnvironmentVariable("DD_GIT_BRANCH") ?? "unknown",
+                    RepositoryUrl = Environment.GetEnvironmentVariable("DD_GIT_REPOSITORY_URL") ?? "unknown",
+                    CommitMessage = Environment.GetEnvironmentVariable("DD_GIT_COMMIT_MESSAGE") ?? "unknown"
+                },
+                Deployment = new
+                {
+                    Version = Environment.GetEnvironmentVariable("DD_DEPLOYMENT_VERSION") ?? "unknown",
+                    Time = Environment.GetEnvironmentVariable("DD_DEPLOYMENT_TIME") ?? "unknown",
+                    Timestamp = DateTime.UtcNow
                 }
             };
 
@@ -124,9 +133,14 @@ namespace SimpleIISApp.Controllers
             var gitInfo = new
             {
                 CommitSha = Environment.GetEnvironmentVariable("DD_GIT_COMMIT_SHA") ?? "unknown",
+                CommitShaShort = Environment.GetEnvironmentVariable("DD_GIT_COMMIT_SHA_SHORT") ?? "unknown", 
+                Branch = Environment.GetEnvironmentVariable("DD_GIT_BRANCH") ?? "unknown",
                 RepositoryUrl = Environment.GetEnvironmentVariable("DD_GIT_REPOSITORY_URL") ?? "unknown",
-                DeploymentTime = DateTime.UtcNow,
-                Version = "1.0.0",
+                CommitMessage = Environment.GetEnvironmentVariable("DD_GIT_COMMIT_MESSAGE") ?? "unknown",
+                DeploymentVersion = Environment.GetEnvironmentVariable("DD_DEPLOYMENT_VERSION") ?? "unknown",
+                DeploymentTime = Environment.GetEnvironmentVariable("DD_DEPLOYMENT_TIME") ?? "unknown",
+                CurrentTime = DateTime.UtcNow,
+                ApplicationVersion = "1.0.0",
                 Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"
             };
 

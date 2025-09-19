@@ -1,6 +1,15 @@
 @echo off
 setlocal EnableDelayedExpansion
 
+:: ============================================================================
+:: MANUAL GIT CONFIGURATION (Optional - for ZIP downloads)
+:: If you downloaded this as a ZIP file and know the commit SHA, set it here:
+:: ============================================================================
+:: set MANUAL_GIT_COMMIT_SHA=abc123def456...
+:: set MANUAL_GIT_BRANCH=main
+:: set MANUAL_GIT_COMMIT_MESSAGE=Your commit message here
+:: ============================================================================
+
 :: Prevent multiple instances
 if exist "logs\deploy_running.lock" (
     echo ❌ Another deployment is already running!
@@ -89,29 +98,72 @@ if exist "SimpleIISApp.csproj" (
 )
 
 call :log_and_echo "🔍 Setting Datadog environment variables..."
-for /f %%i in ('git rev-parse HEAD 2^>nul') do set DD_GIT_COMMIT_SHA=%%i
-for /f %%i in ('git config --get remote.origin.url 2^>nul') do set DD_GIT_REPOSITORY_URL=%%i
 
-:: Fallback values if git commands fail
-if "%DD_GIT_COMMIT_SHA%"=="" set DD_GIT_COMMIT_SHA=unknown
-if "%DD_GIT_REPOSITORY_URL%"=="" set DD_GIT_REPOSITORY_URL=unknown
+:: Check for manual configuration first (for ZIP downloads)
+if not "%MANUAL_GIT_COMMIT_SHA%"=="" (
+    call :log_and_echo "   ✓ Using manual Git configuration..."
+    set DD_GIT_COMMIT_SHA=%MANUAL_GIT_COMMIT_SHA%
+    set DD_GIT_COMMIT_SHA_SHORT=%MANUAL_GIT_COMMIT_SHA:~0,7%
+    if not "%MANUAL_GIT_BRANCH%"=="" (set DD_GIT_BRANCH=%MANUAL_GIT_BRANCH%) else (set DD_GIT_BRANCH=main)
+    if not "%MANUAL_GIT_COMMIT_MESSAGE%"=="" (set DD_GIT_COMMIT_MESSAGE=%MANUAL_GIT_COMMIT_MESSAGE%) else (set DD_GIT_COMMIT_MESSAGE=Manual configuration)
+) else if exist ".git" (
+    call :log_and_echo "   ✓ Git repository detected - extracting commit information..."
+    :: Get Git commit information dynamically
+    for /f %%i in ('git rev-parse HEAD 2^>nul') do set DD_GIT_COMMIT_SHA=%%i
+    for /f %%i in ('git rev-parse --short HEAD 2^>nul') do set DD_GIT_COMMIT_SHA_SHORT=%%i
+    for /f %%i in ('git rev-parse --abbrev-ref HEAD 2^>nul') do set DD_GIT_BRANCH=%%i
+    for /f "delims=" %%i in ('git log -1 --pretty^=format:"%%s" 2^>nul') do set DD_GIT_COMMIT_MESSAGE=%%i
+    
+    :: Fallback values if git commands fail
+    if "%DD_GIT_COMMIT_SHA%"=="" set DD_GIT_COMMIT_SHA=git-repo-no-commits
+    if "%DD_GIT_COMMIT_SHA_SHORT%"=="" set DD_GIT_COMMIT_SHA_SHORT=no-commits
+    if "%DD_GIT_BRANCH%"=="" set DD_GIT_BRANCH=unknown-branch
+    if "%DD_GIT_COMMIT_MESSAGE%"=="" set DD_GIT_COMMIT_MESSAGE=No commit message available
+) else (
+    call :log_and_echo "   ⚠️ No Git repository found (downloaded ZIP?) - using deployment-based values..."
+    :: Set deployment-based values for ZIP downloads
+    set DD_GIT_COMMIT_SHA=zip-download-%timestamp%
+    set DD_GIT_COMMIT_SHA_SHORT=zip-%RANDOM%
+    set DD_GIT_BRANCH=main-download
+    set DD_GIT_COMMIT_MESSAGE=Deployed from ZIP download at %date% %time%
+)
+
+:: Set explicit repository URL for Datadog tracking (always available)
+set DD_GIT_REPOSITORY_URL=https://github.com/MattRuff/simple-iis-app.git
+
+:: Set deployment version for website display
+set DD_DEPLOYMENT_VERSION=%timestamp%
+set DD_DEPLOYMENT_TIME=%date% %time%
 
 call :log_and_echo "   DD_GIT_COMMIT_SHA=%DD_GIT_COMMIT_SHA%"
+call :log_and_echo "   DD_GIT_COMMIT_SHA_SHORT=%DD_GIT_COMMIT_SHA_SHORT%"
+call :log_and_echo "   DD_GIT_BRANCH=%DD_GIT_BRANCH%"
 call :log_and_echo "   DD_GIT_REPOSITORY_URL=%DD_GIT_REPOSITORY_URL%"
+call :log_and_echo "   DD_GIT_COMMIT_MESSAGE=%DD_GIT_COMMIT_MESSAGE%"
+call :log_and_echo "   DD_DEPLOYMENT_VERSION=%DD_DEPLOYMENT_VERSION%"
+call :log_and_echo "   DD_DEPLOYMENT_TIME=%DD_DEPLOYMENT_TIME%"
 call :log_and_echo ""
 
-call :log_and_echo "[1/6] Cleaning previous builds..."
+call :log_and_echo "[1/7] Cleaning previous builds and IIS environment..."
 if exist "bin\Release\net9.0\publish" rmdir /s /q "bin\Release\net9.0\publish" 2>>"%ERROR_LOG%"
 if exist "bin\Debug" rmdir /s /q "bin\Debug" 2>>"%ERROR_LOG%"
 if exist "obj" rmdir /s /q "obj" 2>>"%ERROR_LOG%"
 call :log_and_echo "    ✓ Cleaned build artifacts"
 
+call :log_and_echo "    🧹 Cleaning IIS environment..."
+if exist "C:\inetpub\wwwroot\SimpleIISApp" (
+    rmdir /s /q "C:\inetpub\wwwroot\SimpleIISApp" 2>>"%ERROR_LOG%"
+    call :log_and_echo "    ✓ Cleaned IIS directory"
+) else (
+    call :log_and_echo "    ✓ IIS directory was already clean"
+)
+
 call :log_and_echo ""
-call :log_and_echo "[2/6] Publishing application..."
+call :log_and_echo "[2/7] Publishing application..."
 echo [%time%] Running: dotnet publish -c Release -o bin\Release\net9.0\publish --verbosity detailed >> "%LOG_FILE%"
 echo [%time%] DD_GIT_COMMIT_SHA=%DD_GIT_COMMIT_SHA% >> "%LOG_FILE%"
 echo [%time%] DD_GIT_REPOSITORY_URL=%DD_GIT_REPOSITORY_URL% >> "%LOG_FILE%"
-set DD_GIT_COMMIT_SHA=%DD_GIT_COMMIT_SHA%&& set DD_GIT_REPOSITORY_URL=%DD_GIT_REPOSITORY_URL%&& dotnet publish -c Release -o bin\Release\net9.0\publish --verbosity detailed 1>>"%LOG_FILE%" 2>>"%ERROR_LOG%"
+set DD_GIT_COMMIT_SHA=%DD_GIT_COMMIT_SHA%&& set DD_GIT_COMMIT_SHA_SHORT=%DD_GIT_COMMIT_SHA_SHORT%&& set DD_GIT_BRANCH=%DD_GIT_BRANCH%&& set DD_GIT_REPOSITORY_URL=%DD_GIT_REPOSITORY_URL%&& set DD_GIT_COMMIT_MESSAGE=%DD_GIT_COMMIT_MESSAGE%&& set DD_DEPLOYMENT_VERSION=%DD_DEPLOYMENT_VERSION%&& set DD_DEPLOYMENT_TIME=%DD_DEPLOYMENT_TIME%&& dotnet publish -c Release -o bin\Release\net9.0\publish --verbosity detailed 1>>"%LOG_FILE%" 2>>"%ERROR_LOG%"
 if %ERRORLEVEL% neq 0 (
     call :log_and_echo "    ❌ Publish failed! Check error log: %ERROR_LOG%"
     call :log_and_echo "❌ Deployment failed. Check logs:"
@@ -142,12 +194,12 @@ if %ERRORLEVEL% neq 0 (
 call :log_and_echo "    ✓ Published"
 
 call :log_and_echo ""
-call :log_and_echo "[3/6] Creating IIS directory..."
+call :log_and_echo "[3/7] Creating IIS directory..."
 if not exist "C:\inetpub\wwwroot\SimpleIISApp" mkdir "C:\inetpub\wwwroot\SimpleIISApp" 2>>"%ERROR_LOG%"
 call :log_and_echo "    ✓ IIS directory created"
 
 call :log_and_echo ""
-call :log_and_echo "[4/6] Copying files to IIS directory..."
+call :log_and_echo "[4/7] Copying files to IIS directory..."
 echo [%time%] Running: xcopy to C:\inetpub\wwwroot\SimpleIISApp\ >> "%LOG_FILE%"
 xcopy "bin\Release\net9.0\publish\*" "C:\inetpub\wwwroot\SimpleIISApp\" /E /I /Y 1>>"%LOG_FILE%" 2>>"%ERROR_LOG%"
 if %ERRORLEVEL% neq 0 (
@@ -166,7 +218,7 @@ if %ERRORLEVEL% neq 0 (
 call :log_and_echo "    ✓ Files copied to IIS directory"
 
 call :log_and_echo ""
-call :log_and_echo "[5/6] Final verification..."
+call :log_and_echo "[5/7] Final verification..."
 call :log_and_echo "   ✓ Verifying published files exist"
 if exist "C:\inetpub\wwwroot\SimpleIISApp\SimpleIISApp.dll" (
     call :log_and_echo "   ✓ Application DLL found"
@@ -175,7 +227,18 @@ if exist "C:\inetpub\wwwroot\SimpleIISApp\SimpleIISApp.dll" (
 )
 
 call :log_and_echo ""
-call :log_and_echo "[6/6] Deployment Complete!"
+call :log_and_echo "[6/7] Restarting IIS..."
+call :log_and_echo "   🔄 Performing IIS restart for clean deployment..."
+iisreset >nul 2>>"%ERROR_LOG%"
+if %ERRORLEVEL% neq 0 (
+    call :log_and_echo "   ⚠️ IIS restart failed - application may need manual restart"
+    call :log_and_echo "   Run 'iisreset' manually as Administrator if needed"
+) else (
+    call :log_and_echo "   ✓ IIS restarted successfully"
+)
+
+call :log_and_echo ""
+call :log_and_echo "[7/7] Deployment Complete!"
 call :log_and_echo ""
 call :log_and_echo "================================"
 call :log_and_echo "    🎉 Ready for IIS Setup! 🎉" 
