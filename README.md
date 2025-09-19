@@ -116,17 +116,23 @@ Browse to: `http://localhost:8080`
 ## 📂 **Folder Structure Summary**
 
 ```
-Your Project:
-├── SimpleIISApp/                    ← Source code (DON'T point IIS here)
-├── bin/Release/net9.0/publish/      ← Build output (DON'T point IIS here)
-└── deploy-admin.bat                 ← Run this script
+SimpleIISApp/ (Your Project Directory):
+├── Controllers/                     ← Source code controllers
+├── Views/                          ← View templates  
+├── SimpleIISApp.csproj             ← Project file
+├── Program.cs                      ← Application entry point
+├── web.config                      ← IIS configuration
+├── deploy-admin.bat               ← Deployment script (run this!)
+├── deploy.bat                     ← Alternative deployment script
+├── bin/Release/net9.0/publish/    ← Build output (DON'T point IIS here)
+└── [other project files...]
 
-IIS Directory (created by script):
+IIS Directory (created by deployment script):
 └── C:\inetpub\wwwroot\SimpleIISApp/ ← Point IIS HERE! ✅
     ├── SimpleIISApp.dll
-    ├── web.config
+    ├── web.config  
     ├── appsettings.json
-    └── [other files...]
+    └── [other deployed files...]
 ```
 
 ## 🔗 **Git vs ZIP Download Configuration**
@@ -384,8 +390,8 @@ Enable-WindowsOptionalFeature -Online -FeatureName IIS-ManagementConsole
 
 ### **Step 2.1: Build the Application**
 ```bash
-# Navigate to project directory
-cd SimpleIISApp
+# You should already be in the SimpleIISApp directory
+# If not, navigate to it first
 
 # Build the application
 dotnet build
