@@ -202,8 +202,7 @@ call :log_and_echo ""
 
 call :log_and_echo "[1/8] Stopping IIS application to release file locks..."
 call :log_and_echo "    🛑 Stopping SimpleIISApp application pool..."
-powershell -Command "Stop-IISAppPool -Name 'SimpleIISApp' -ErrorAction SilentlyContinue" >nul 2>>"%ERROR_LOG%"
-powershell -Command "Stop-IISAppPool -Name 'DefaultAppPool' -ErrorAction SilentlyContinue" >nul 2>>"%ERROR_LOG%"
+powershell -Command "try { Import-Module WebAdministration -ErrorAction SilentlyContinue; Stop-WebAppPool -Name 'SimpleIISApp' -ErrorAction SilentlyContinue; Stop-WebAppPool -Name 'DefaultAppPool' -ErrorAction SilentlyContinue; Write-Host 'Application pools stopped successfully' } catch { Write-Host 'App pool stop skipped (no IIS module available)' }" >nul 2>>"%ERROR_LOG%"
 call :log_and_echo "    ✓ Application pools stopped (files can now be updated)"
 
 call :log_and_echo ""
@@ -356,13 +355,13 @@ call :log_and_echo ""
 call :log_and_echo "[5/8] Creating IIS application and application pool..."
 call :log_and_echo "    🔧 Creating SimpleIISApp application pool..."
 
-:: Create application pool (simplified)
-powershell -Command "try { if (-not (Get-IISAppPool -Name 'SimpleIISApp' -ErrorAction SilentlyContinue)) { New-IISAppPool -Name 'SimpleIISApp' -Force; Set-IISAppPool -Name 'SimpleIISApp' -ManagedRuntimeVersion ''; Write-Host 'Created new application pool' } else { Write-Host 'Application pool already exists' } } catch { Write-Host 'AppPool creation skipped' }" 2>>"%ERROR_LOG%"
+:: Create application pool using consistent WebAdministration module
+powershell -Command "try { Import-Module WebAdministration -ErrorAction SilentlyContinue; $poolExists = Get-WebAppPool -Name 'SimpleIISApp' -ErrorAction SilentlyContinue; if (-not $poolExists) { New-WebAppPool -Name 'SimpleIISApp'; Set-ItemProperty -Path 'IIS:\AppPools\SimpleIISApp' -Name managedRuntimeVersion -Value ''; Write-Host 'Created new application pool' } else { Write-Host 'Application pool already exists' } } catch { Write-Host 'AppPool creation skipped (manual setup required)' }" >nul 2>>"%ERROR_LOG%"
 
 call :log_and_echo "    🌐 Creating SimpleIISApp website..."
 
-:: Create website (simplified)
-powershell -Command "try { if (-not (Get-IISSite -Name 'SimpleIISApp' -ErrorAction SilentlyContinue)) { New-IISSite -Name 'SimpleIISApp' -PhysicalPath 'C:\inetpub\wwwroot\SimpleIISApp' -Port 8080 -ApplicationPool 'SimpleIISApp' -Force; Write-Host 'Created new website on port 8080' } else { Write-Host 'Website already exists' } } catch { Write-Host 'Website creation skipped' }" 2>>"%ERROR_LOG%"
+:: Create website using consistent WebAdministration module
+powershell -Command "try { Import-Module WebAdministration -ErrorAction SilentlyContinue; $siteExists = Get-Website -Name 'SimpleIISApp' -ErrorAction SilentlyContinue; if (-not $siteExists) { New-Website -Name 'SimpleIISApp' -PhysicalPath 'C:\inetpub\wwwroot\SimpleIISApp' -Port 8080 -ApplicationPool 'SimpleIISApp'; Write-Host 'Created new website on port 8080' } else { Write-Host 'Website already exists' } } catch { Write-Host 'Website creation skipped (manual setup required)' }" >nul 2>>"%ERROR_LOG%"
 
 call :log_and_echo "    ✅ IIS configuration completed"
 
@@ -378,7 +377,7 @@ if exist "C:\inetpub\wwwroot\SimpleIISApp\SimpleIISApp.dll" (
 call :log_and_echo ""
 call :log_and_echo "[7/8] Restarting IIS..."
 call :log_and_echo "   🔄 Performing IIS restart for clean deployment..."
-iisreset >nul 2>>%ERROR_LOG%
+iisreset >nul 2>>"%ERROR_LOG%"
 if %ERRORLEVEL% neq 0 (
     call :log_and_echo "   ⚠️ IIS restart failed - application may need manual restart"
     call :log_and_echo "   Run 'iisreset' manually as Administrator if needed"
