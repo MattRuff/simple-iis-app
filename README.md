@@ -654,4 +654,36 @@ Get-IISSite | Where-Object {$_.Name -eq "SimpleIISApp"}
 
 ---
 
+## **🔍 Git SHA Extraction Utility**
+
+Want to explore different ways to extract Git SHA in batch files? 
+
+### **For Git Repositories:**
+```bash
+get-git-sha.bat
+```
+Shows 5 methods using `git` commands (when Git is installed)
+
+### **For ZIP Downloads (No Git Required):**
+```bash
+fetch-sha-no-git.bat
+```
+Shows 4 methods to get **REAL SHA** without Git installed!
+
+### **What `fetch-sha-no-git.bat` Shows:**
+- 🌐 **GitHub API (REST):** `Invoke-RestMethod` to get latest commit
+- 🌐 **GitHub Refs API:** Alternative API endpoint  
+- 📄 **curl method:** Using curl if available
+- 🔧 **PowerShell WebClient:** Direct download approach
+
+### **Smart Deployment Process:**
+1. **Manual config** (if you set `MANUAL_GIT_COMMIT_SHA`)
+2. **Git commands** (if `.git` folder exists) 
+3. **🆕 GitHub API** (if no Git but internet available)
+4. **Fallback values** (timestamp-based as last resort)
+
+**🎯 Result: You get REAL Git SHA even from ZIP downloads!**
+
+---
+
 **Perfect for testing IIS deployment with authentication and monitoring - ideal for observability tools like Datadog!** 🎉

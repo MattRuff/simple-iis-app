@@ -9,6 +9,24 @@ setlocal EnableDelayedExpansion
 :: set MANUAL_GIT_BRANCH=main
 :: set MANUAL_GIT_COMMIT_MESSAGE=Your commit message here
 :: ============================================================================
+::
+:: ============================================================================
+:: GIT SHA RAW TEXT EXTRACTION METHODS (Reference)
+:: ============================================================================
+:: This script automatically extracts Git SHA using these methods:
+::
+:: ✅ USED: for /f %%i in ('git rev-parse HEAD') do set SHA=%%i
+::          - Gets full 40-character commit SHA
+::          - Most reliable for batch files
+::
+:: Alternative methods you can use:
+:: Method 1: git rev-parse HEAD > sha.txt & set /p SHA=<sha.txt & del sha.txt
+:: Method 2: for /f %%i in ('powershell -c "git rev-parse HEAD"') do set SHA=%%i  
+:: Method 3: git log -1 --format=%%H
+:: Method 4: git rev-parse --short HEAD  (7 characters)
+::
+:: The script displays: "📋 Raw Git SHA: [actual-sha-here]" for verification
+:: ============================================================================
 
 :: Prevent multiple instances
 if exist "logs\deploy_running.lock" (
@@ -108,11 +126,16 @@ if not "%MANUAL_GIT_COMMIT_SHA%"=="" (
     if not "%MANUAL_GIT_COMMIT_MESSAGE%"=="" (set DD_GIT_COMMIT_MESSAGE=%MANUAL_GIT_COMMIT_MESSAGE%) else (set DD_GIT_COMMIT_MESSAGE=Manual configuration)
 ) else if exist ".git" (
     call :log_and_echo "   ✓ Git repository detected - extracting commit information..."
-    :: Get Git commit information dynamically
+    
+    :: Get Git commit information dynamically (raw text extraction)
+    call :log_and_echo "   🔍 Extracting raw Git SHA..."
     for /f %%i in ('git rev-parse HEAD 2^>nul') do set DD_GIT_COMMIT_SHA=%%i
     for /f %%i in ('git rev-parse --short HEAD 2^>nul') do set DD_GIT_COMMIT_SHA_SHORT=%%i
     for /f %%i in ('git rev-parse --abbrev-ref HEAD 2^>nul') do set DD_GIT_BRANCH=%%i
     for /f "delims=" %%i in ('git log -1 --pretty^=format:"%%s" 2^>nul') do set DD_GIT_COMMIT_MESSAGE=%%i
+    
+    :: Display raw Git SHA for verification
+    call :log_and_echo "   📋 Raw Git SHA: %DD_GIT_COMMIT_SHA%"
     
     :: Fallback values if git commands fail
     if "%DD_GIT_COMMIT_SHA%"=="" set DD_GIT_COMMIT_SHA=git-repo-no-commits
@@ -120,12 +143,32 @@ if not "%MANUAL_GIT_COMMIT_SHA%"=="" (
     if "%DD_GIT_BRANCH%"=="" set DD_GIT_BRANCH=unknown-branch
     if "%DD_GIT_COMMIT_MESSAGE%"=="" set DD_GIT_COMMIT_MESSAGE=No commit message available
 ) else (
-    call :log_and_echo "   ⚠️ No Git repository found (downloaded ZIP?) - using deployment-based values..."
-    :: Set deployment-based values for ZIP downloads
-    set DD_GIT_COMMIT_SHA=zip-download-%timestamp%
-    set DD_GIT_COMMIT_SHA_SHORT=zip-%RANDOM%
-    set DD_GIT_BRANCH=main-download
-    set DD_GIT_COMMIT_MESSAGE=Deployed from ZIP download at %date% %time%
+    call :log_and_echo "   ⚠️ No Git repository found (downloaded ZIP?) - attempting to fetch SHA from GitHub API..."
+    
+    :: Try to get real SHA from GitHub API using PowerShell
+    call :log_and_echo "   🌐 Fetching latest commit SHA from GitHub API..."
+    
+    :: Method 1: GitHub API call to get latest commit SHA
+    for /f "delims=" %%i in ('powershell -c "$response = Invoke-RestMethod 'https://api.github.com/repos/MattRuff/simple-iis-app/commits/main' -ErrorAction SilentlyContinue; if($response) { $response.sha } else { 'api-failed' }" 2^>nul') do set API_SHA=%%i
+    
+    if not "%API_SHA%"=="api-failed" if not "%API_SHA%"=="" (
+        call :log_and_echo "   ✅ Successfully fetched real SHA from GitHub API!"
+        set DD_GIT_COMMIT_SHA=%API_SHA%
+        set DD_GIT_COMMIT_SHA_SHORT=%API_SHA:~0,7%
+        set DD_GIT_BRANCH=main
+        
+        :: Try to get commit message from API too
+        for /f "delims=" %%i in ('powershell -c "$response = Invoke-RestMethod 'https://api.github.com/repos/MattRuff/simple-iis-app/commits/main' -ErrorAction SilentlyContinue; if($response) { $response.commit.message.Split([char]10)[0] } else { 'Latest commit from GitHub' }" 2^>nul') do set DD_GIT_COMMIT_MESSAGE=%%i
+        
+        call :log_and_echo "   📋 Real GitHub SHA: %DD_GIT_COMMIT_SHA%"
+    ) else (
+        call :log_and_echo "   ⚠️ GitHub API failed - using deployment-based fallback values..."
+        :: Fallback to deployment-based values
+        set DD_GIT_COMMIT_SHA=zip-download-%timestamp%
+        set DD_GIT_COMMIT_SHA_SHORT=zip-%RANDOM%
+        set DD_GIT_BRANCH=main-download
+        set DD_GIT_COMMIT_MESSAGE=Deployed from ZIP download at %date% %time%
+    )
 )
 
 :: Set explicit repository URL for Datadog tracking (always available)
