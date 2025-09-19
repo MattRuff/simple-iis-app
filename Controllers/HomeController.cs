@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
-namespace SimpleIISApp.Controllers
+namespace simple_iis_app.Controllers
 {
     public class HomeController : Controller
     {

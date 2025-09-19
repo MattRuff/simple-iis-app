@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-namespace SimpleIISApp.Controllers
+namespace simple_iis_app.Controllers
 {
     public class AccountController : Controller
     {
