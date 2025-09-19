@@ -419,13 +419,15 @@ dotnet publish -c Release -o bin\Release\net9.0\publish
 - ✅ **Version tracking** - each deployment gets a unique version number
 
 **What the Enhanced Scripts Do:**
-1. **[1/7] Clean Environment:** Remove old files from `C:\inetpub\wwwroot\SimpleIISApp`
-2. **[2/7] Build & Publish:** Compile application with .NET 9.0
-3. **[3/7] Create IIS Directory:** Ensure deployment target exists
-4. **[4/7] Deploy to IIS:** Copy files to IIS directory
-5. **[5/7] Verify Deployment:** Check files deployed correctly
-6. **[6/7] Restart IIS:** Perform clean restart for immediate changes  
-7. **[7/7] Complete:** Show deployment version and success message
+1. **[1/9] Stop IIS Application:** Release file locks by stopping application pools
+2. **[2/9] Clean Environment:** Remove old files from `C:\inetpub\wwwroot\SimpleIISApp`
+3. **[3/9] Build & Publish:** Compile application with .NET 9.0
+4. **[4/9] Create IIS Directory:** Ensure deployment target exists
+5. **[5/9] Deploy to IIS:** Copy files to IIS directory
+6. **[6/9] Create IIS Application:** **NEW!** Automatically create application pool and website if they don't exist
+7. **[7/9] Verify Deployment:** Check files deployed correctly
+8. **[8/9] Restart IIS:** Perform clean restart for immediate changes  
+9. **[9/9] Complete:** Show deployment version and success message
 
 ### **Step 2.3: Verify Published Files**
 Check that these files exist in the publish folder:
@@ -454,26 +456,28 @@ deploy-admin.bat
 
 **⚠️ Common Mistake:** Don't point IIS directly to your source folder or Desktop - always use `C:\inetpub\wwwroot\SimpleIISApp`!
 
-### **Step 3.2: Create IIS Site**
-1. **Open IIS Manager**
-2. **Right-click "Sites"** → **"Add Website..."**
-3. **Configure EXACTLY as shown:**
-   - **Site name:** `SimpleIISApp`
-   - **Physical path:** `C:\inetpub\wwwroot\SimpleIISApp`
-   - **Binding Type:** `http`
-   - **Port:** `8080` (or any available port)
-4. **Click OK**
+### **Step 3.2: Create IIS Site** ✅ **AUTOMATED!**
+~~1. **Open IIS Manager**~~ **DONE BY SCRIPT!**
+~~2. **Right-click "Sites"** → **"Add Website..."**~~ **DONE BY SCRIPT!**
+~~3. **Configure EXACTLY as shown:**~~ **DONE BY SCRIPT!**
+   - ✅ **Site name:** `SimpleIISApp` 
+   - ✅ **Physical path:** `C:\inetpub\wwwroot\SimpleIISApp`
+   - ✅ **Binding Type:** `http`
+   - ✅ **Port:** `8080` (default, or updates existing)
+~~4. **Click OK**~~ **DONE BY SCRIPT!**
 
-🎯 **CRITICAL:** The physical path MUST be exactly `C:\inetpub\wwwroot\SimpleIISApp` - this is where deploy.bat copied your files!
+🎯 **AUTOMATED:** The deployment script now automatically creates the IIS site and application pool for you!
 
-### **Step 3.3: Configure Application Pool**
-1. **Click "Application Pools"** in IIS Manager
-2. **Find your site's app pool** (usually same name as site)
-3. **Right-click** → **"Advanced Settings"**
-4. **Set:**
-   - **.NET CLR Version:** `No Managed Code`
-   - **Managed Pipeline Mode:** `Integrated`
-5. **Click OK**
+### **Step 3.3: Configure Application Pool** ✅ **AUTOMATED!**
+~~1. **Click "Application Pools"** in IIS Manager~~ **DONE BY SCRIPT!**
+~~2. **Find your site's app pool** (usually same name as site)~~ **DONE BY SCRIPT!**
+~~3. **Right-click** → **"Advanced Settings"**~~ **DONE BY SCRIPT!**
+~~4. **Set:**~~ **DONE BY SCRIPT!**
+   - ✅ **.NET CLR Version:** `No Managed Code`
+   - ✅ **Managed Pipeline Mode:** `Integrated`
+~~5. **Click OK**~~ **DONE BY SCRIPT!**
+
+🎯 **AUTOMATED:** Application pool `SimpleIISApp` is automatically created and configured with "No Managed Code" for .NET Core!
 
 ---
 

@@ -157,7 +157,14 @@ call :log_and_echo "   DD_DEPLOYMENT_VERSION=%DD_DEPLOYMENT_VERSION%"
 call :log_and_echo "   DD_DEPLOYMENT_TIME=%DD_DEPLOYMENT_TIME%"
 call :log_and_echo ""
 
-call :log_and_echo "[1/7] Cleaning previous builds and IIS environment..."
+call :log_and_echo "[1/8] Stopping IIS application to release file locks..."
+call :log_and_echo "    🛑 Stopping SimpleIISApp application pool..."
+powershell -Command "Stop-IISAppPool -Name 'SimpleIISApp' -ErrorAction SilentlyContinue" >nul 2>>"%ERROR_LOG%"
+powershell -Command "Stop-IISAppPool -Name 'DefaultAppPool' -ErrorAction SilentlyContinue" >nul 2>>"%ERROR_LOG%"
+call :log_and_echo "    ✓ Application pools stopped (files can now be updated)"
+
+call :log_and_echo ""
+call :log_and_echo "[2/8] Cleaning previous builds and IIS environment..."
 if exist "bin\Release\net9.0\publish" rmdir /s /q "bin\Release\net9.0\publish" 2>>"%ERROR_LOG%"
 if exist "bin\Debug" rmdir /s /q "bin\Debug" 2>>"%ERROR_LOG%"
 if exist "obj" rmdir /s /q "obj" 2>>"%ERROR_LOG%"
@@ -172,7 +179,7 @@ if exist "C:\inetpub\wwwroot\SimpleIISApp" (
 )
 
 call :log_and_echo ""
-call :log_and_echo "[2/7] Publishing application..."
+call :log_and_echo "[3/8] Publishing application..."
 echo [%time%] Running: dotnet publish -c Release -o bin\Release\net9.0\publish --verbosity detailed >> "%LOG_FILE%"
 echo [%time%] DD_GIT_COMMIT_SHA=%DD_GIT_COMMIT_SHA% >> "%LOG_FILE%"
 echo [%time%] DD_GIT_REPOSITORY_URL=%DD_GIT_REPOSITORY_URL% >> "%LOG_FILE%"
@@ -207,12 +214,12 @@ if %ERRORLEVEL% neq 0 (
 call :log_and_echo "    ✓ Published"
 
 call :log_and_echo ""
-call :log_and_echo "[3/7] Creating IIS directory..."
+call :log_and_echo "[4/8] Creating IIS directory..."
 if not exist "C:\inetpub\wwwroot\SimpleIISApp" mkdir "C:\inetpub\wwwroot\SimpleIISApp" 2>>"%ERROR_LOG%"
 call :log_and_echo "    ✓ IIS directory created"
 
 call :log_and_echo ""
-call :log_and_echo "[4/7] Copying files to IIS directory..."
+call :log_and_echo "[5/8] Copying files to IIS directory..."
 echo [%time%] Running: xcopy to C:\inetpub\wwwroot\SimpleIISApp\ >> "%LOG_FILE%"
 xcopy "bin\Release\net9.0\publish\*" "C:\inetpub\wwwroot\SimpleIISApp\" /E /I /Y 1>>"%LOG_FILE%" 2>>"%ERROR_LOG%"
 if %ERRORLEVEL% neq 0 (
@@ -229,7 +236,21 @@ if %ERRORLEVEL% neq 0 (
 call :log_and_echo "    ✓ Files copied to IIS directory"
 
 call :log_and_echo ""
-call :log_and_echo "[5/7] Final verification..."
+call :log_and_echo "[6/9] Creating IIS application and application pool..."
+call :log_and_echo "    🔧 Checking if SimpleIISApp application pool exists..."
+
+:: Check if application pool exists, create if not
+powershell -Command "if (-not (Get-IISAppPool -Name 'SimpleIISApp' -ErrorAction SilentlyContinue)) { New-IISAppPool -Name 'SimpleIISApp' -Force; Set-IISAppPool -Name 'SimpleIISApp' -ManagedRuntimeVersion ''; Write-Host 'Created SimpleIISApp application pool' } else { Write-Host 'SimpleIISApp application pool already exists' }" 2>>"%ERROR_LOG%"
+
+call :log_and_echo "    🌐 Checking if SimpleIISApp website exists..."
+
+:: Check if website exists, create if not (using port 8080 as default)
+powershell -Command "if (-not (Get-IISSite -Name 'SimpleIISApp' -ErrorAction SilentlyContinue)) { New-IISSite -Name 'SimpleIISApp' -PhysicalPath 'C:\inetpub\wwwroot\SimpleIISApp' -Port 8080 -ApplicationPool 'SimpleIISApp' -Force; Write-Host 'Created SimpleIISApp website on port 8080' } else { Set-IISSite -Name 'SimpleIISApp' -PhysicalPath 'C:\inetpub\wwwroot\SimpleIISApp' -ApplicationPool 'SimpleIISApp'; Write-Host 'Updated SimpleIISApp website configuration' }" 2>>"%ERROR_LOG%"
+
+call :log_and_echo "    ✅ IIS application and application pool configured"
+
+call :log_and_echo ""
+call :log_and_echo "[7/9] Final verification..."
 call :log_and_echo "   ✓ Verifying published files exist"
 if exist "C:\inetpub\wwwroot\SimpleIISApp\SimpleIISApp.dll" (
     call :log_and_echo "   ✓ Application DLL found"
@@ -238,7 +259,7 @@ if exist "C:\inetpub\wwwroot\SimpleIISApp\SimpleIISApp.dll" (
 )
 
 call :log_and_echo ""
-call :log_and_echo "[6/7] Restarting IIS..."
+call :log_and_echo "[8/9] Restarting IIS..."
 call :log_and_echo "   🔄 Performing IIS restart for clean deployment..."
 iisreset >nul 2>>%ERROR_LOG%
 if %ERRORLEVEL% neq 0 (
@@ -249,7 +270,7 @@ if %ERRORLEVEL% neq 0 (
 )
 
 call :log_and_echo ""
-call :log_and_echo "[7/7] Deployment Complete!"
+call :log_and_echo "[9/9] Deployment Complete!"
 call :log_and_echo ""
 call :log_and_echo "================================"
 call :log_and_echo "    🎉 Ready for IIS Setup! 🎉"
