@@ -1,0 +1,21 @@
+🚀 HOW TO DEPLOY THIS APPLICATION
+
+1. RIGHT-CLICK on "DEPLOY-HERE.bat"
+2. SELECT "Run as administrator"
+3. WAIT for it to complete
+4. FOLLOW the IIS setup instructions shown
+
+That's it! 
+
+The script will:
+- Build the application
+- Copy files to C:\inetpub\wwwroot\simple-iis-app\
+- Show you the next steps for IIS setup
+
+🔧 Requirements:
+- .NET 9.0 SDK installed
+- IIS installed on Windows
+- Run as Administrator
+
+📁 Files will be deployed to:
+C:\inetpub\wwwroot\simple-iis-app\
