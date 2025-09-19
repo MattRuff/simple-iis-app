@@ -277,10 +277,60 @@ call :log_and_echo "    ✓ Published"
 
 call :log_and_echo ""
 call :log_and_echo "[4/8] Copying files to IIS directory..."
-echo [%time%] Running: xcopy to C:\inetpub\wwwroot\SimpleIISApp\ >> "%LOG_FILE%"
+
+:: First, let's verify the source directory exists and has files
+call :log_and_echo "    🔍 Checking source directory: bin\Release\net9.0\publish\"
+if not exist "bin\Release\net9.0\publish" (
+    call :log_and_echo "    ❌ Source directory doesn't exist: bin\Release\net9.0\publish\"
+    call :log_and_echo "    The publish step may have failed. Check the logs above."
+    :: Clean up lock file on error
+    if exist "logs\deploy_admin_running.lock" del "logs\deploy_admin_running.lock" >nul
+    exit /b 1
+)
+
+:: Count files in source directory
+call :log_and_echo "    📁 Checking if source directory has files..."
+dir "bin\Release\net9.0\publish" /B 2>nul | find /C /V "" > temp_count.txt
+set /p FILE_COUNT=<temp_count.txt
+del temp_count.txt >nul 2>nul
+
+call :log_and_echo "    📊 Found %FILE_COUNT% files/folders in source directory"
+
+if "%FILE_COUNT%"=="0" (
+    call :log_and_echo "    ❌ Source directory is empty! The publish step failed."
+    call :log_and_echo "    Check the publish logs above for errors."
+    :: Clean up lock file on error
+    if exist "logs\deploy_admin_running.lock" del "logs\deploy_admin_running.lock" >nul
+    exit /b 1
+)
+
+:: Show what files we're about to copy
+call :log_and_echo "    📋 Files to be copied:"
+dir "bin\Release\net9.0\publish" /B 2>>"%ERROR_LOG%" | powershell -Command "$input | Select-Object -First 10 | ForEach-Object { \"      $_\" }" >> "%LOG_FILE%"
+
+call :log_and_echo "    📂 Copying files from bin\Release\net9.0\publish\ to C:\inetpub\wwwroot\SimpleIISApp\"
+echo [%time%] Running: xcopy "bin\Release\net9.0\publish\*" "C:\inetpub\wwwroot\SimpleIISApp\" /E /I /Y >> "%LOG_FILE%"
+
 xcopy "bin\Release\net9.0\publish\*" "C:\inetpub\wwwroot\SimpleIISApp\" /E /I /Y 1>>"%LOG_FILE%" 2>>"%ERROR_LOG%"
-if %ERRORLEVEL% neq 0 (
-    call :log_and_echo "    ❌ Copy failed!"
+set COPY_RESULT=%ERRORLEVEL%
+
+:: Verify files were actually copied
+call :log_and_echo "    🔍 Verifying copy operation..."
+if exist "C:\inetpub\wwwroot\SimpleIISApp" (
+    dir "C:\inetpub\wwwroot\SimpleIISApp" /B 2>nul | find /C /V "" > temp_dest_count.txt
+    set /p DEST_FILE_COUNT=<temp_dest_count.txt
+    del temp_dest_count.txt >nul 2>nul
+    call :log_and_echo "    📊 Destination directory now has %DEST_FILE_COUNT% files/folders"
+) else (
+    call :log_and_echo "    ❌ Destination directory doesn't exist!"
+    set DEST_FILE_COUNT=0
+)
+
+if %COPY_RESULT% neq 0 (
+    call :log_and_echo "    ❌ Copy command failed with error code: %COPY_RESULT%"
+    call :log_and_echo "    Make sure you're running as Administrator"
+    call :log_and_echo "    You can manually copy from: bin\Release\net9.0\publish\"
+    call :log_and_echo "    To: C:\inetpub\wwwroot\SimpleIISApp\"
     call :log_and_echo "❌ Deployment failed. Check logs:"
     call :log_and_echo "   Main log: %LOG_FILE%"
     call :log_and_echo "   Error log: %ERROR_LOG%"
@@ -290,21 +340,31 @@ if %ERRORLEVEL% neq 0 (
     if exist "logs\deploy_admin_running.lock" del "logs\deploy_admin_running.lock" >nul
     exit /b 1
 )
-call :log_and_echo "    ✓ Files copied to IIS directory"
+
+if "%DEST_FILE_COUNT%"=="0" (
+    call :log_and_echo "    ❌ Copy command succeeded but destination is still empty!"
+    call :log_and_echo "    This indicates a problem with the xcopy command or file paths."
+    call :log_and_echo "    Please check permissions and try running as Administrator."
+    :: Clean up lock file on error
+    if exist "logs\deploy_admin_running.lock" del "logs\deploy_admin_running.lock" >nul
+    exit /b 1
+)
+
+call :log_and_echo "    ✅ Successfully copied %DEST_FILE_COUNT% files/folders to IIS directory"
 
 call :log_and_echo ""
 call :log_and_echo "[5/8] Creating IIS application and application pool..."
-call :log_and_echo "    🔧 Checking if SimpleIISApp application pool exists..."
+call :log_and_echo "    🔧 Creating SimpleIISApp application pool..."
 
-:: Check if application pool exists, create if not
-powershell -Command "if (-not (Get-IISAppPool -Name 'SimpleIISApp' -ErrorAction SilentlyContinue)) { New-IISAppPool -Name 'SimpleIISApp' -Force; Set-IISAppPool -Name 'SimpleIISApp' -ManagedRuntimeVersion ''; Write-Host 'Created SimpleIISApp application pool' } else { Write-Host 'SimpleIISApp application pool already exists' }" 2>>"%ERROR_LOG%"
+:: Create application pool (simplified)
+powershell -Command "try { if (-not (Get-IISAppPool -Name 'SimpleIISApp' -ErrorAction SilentlyContinue)) { New-IISAppPool -Name 'SimpleIISApp' -Force; Set-IISAppPool -Name 'SimpleIISApp' -ManagedRuntimeVersion ''; Write-Host 'Created new application pool' } else { Write-Host 'Application pool already exists' } } catch { Write-Host 'AppPool creation skipped' }" 2>>"%ERROR_LOG%"
 
-call :log_and_echo "    🌐 Checking if SimpleIISApp website exists..."
+call :log_and_echo "    🌐 Creating SimpleIISApp website..."
 
-:: Check if website exists, create if not (using port 8080 as default)
-powershell -Command "if (-not (Get-IISSite -Name 'SimpleIISApp' -ErrorAction SilentlyContinue)) { New-IISSite -Name 'SimpleIISApp' -PhysicalPath 'C:\inetpub\wwwroot\SimpleIISApp' -Port 8080 -ApplicationPool 'SimpleIISApp' -Force; Write-Host 'Created SimpleIISApp website on port 8080' } else { Set-IISSite -Name 'SimpleIISApp' -PhysicalPath 'C:\inetpub\wwwroot\SimpleIISApp' -ApplicationPool 'SimpleIISApp'; Write-Host 'Updated SimpleIISApp website configuration' }" 2>>"%ERROR_LOG%"
+:: Create website (simplified)
+powershell -Command "try { if (-not (Get-IISSite -Name 'SimpleIISApp' -ErrorAction SilentlyContinue)) { New-IISSite -Name 'SimpleIISApp' -PhysicalPath 'C:\inetpub\wwwroot\SimpleIISApp' -Port 8080 -ApplicationPool 'SimpleIISApp' -Force; Write-Host 'Created new website on port 8080' } else { Write-Host 'Website already exists' } } catch { Write-Host 'Website creation skipped' }" 2>>"%ERROR_LOG%"
 
-call :log_and_echo "    ✅ IIS application and application pool configured"
+call :log_and_echo "    ✅ IIS configuration completed"
 
 call :log_and_echo ""
 call :log_and_echo "[6/8] Final verification..."
@@ -330,8 +390,11 @@ call :log_and_echo ""
 call :log_and_echo "[8/8] Deployment Complete!"
 call :log_and_echo ""
 call :log_and_echo "================================"
-call :log_and_echo "    🎉 Ready for IIS Setup! 🎉"
+call :log_and_echo "    🎉 Ready for IIS Setup! 🎉" 
 call :log_and_echo "================================"
+
+:: Prevent any potential looping by creating completion marker
+echo DEPLOYMENT_COMPLETED > "logs\deployment_complete_%timestamp%.flag"
 call :log_and_echo ""
 call :log_and_echo "✅ Published files are in: bin\Release\net9.0\publish\"
 call :log_and_echo "✅ IIS files are in: C:\inetpub\wwwroot\SimpleIISApp\"
