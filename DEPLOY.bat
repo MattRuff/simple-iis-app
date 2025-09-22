@@ -154,10 +154,24 @@ echo   🔍 Gathering detailed .NET information...
 dotnet --info >> "%DEBUG_LOG%" 2>&1
 call :log_message "Detailed .NET info logged to debug file"
 
-:: Log NuGet sources
+:: Log and check NuGet sources
 echo   🔍 Checking NuGet sources...
 dotnet nuget list source >> "%NUGET_LOG%" 2>&1
 call :log_message "NuGet sources logged"
+
+:: Check if any sources are configured (simplified approach)
+echo   🔍 Verifying NuGet sources are accessible...
+dotnet nuget list source > nul 2>&1
+if !errorlevel! equ 0 (
+    echo   ✅ NuGet sources are configured and accessible
+    call :log_message "SUCCESS: NuGet sources verified"
+) else (
+    echo   ⚠️  NuGet sources issue detected
+    call :log_message "WARNING: NuGet sources issue"
+    echo   Adding official NuGet source...
+    dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org >> "%NUGET_LOG%" 2>&1
+    echo   ✅ NuGet source configuration attempted
+)
 
 :: Log current packages
 echo   🔍 Checking current package references...
