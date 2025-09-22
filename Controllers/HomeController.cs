@@ -105,10 +105,7 @@ namespace simple_iis_app.Controllers
                 },
                 Git = new
                 {
-                    CommitSha = Environment.GetEnvironmentVariable("DD_GIT_COMMIT_SHA") ?? "unknown",
-                    CommitShaShort = Environment.GetEnvironmentVariable("DD_GIT_COMMIT_SHA_SHORT") ?? "unknown", 
                     Branch = Environment.GetEnvironmentVariable("DD_GIT_BRANCH") ?? "unknown",
-                    RepositoryUrl = Environment.GetEnvironmentVariable("DD_GIT_REPOSITORY_URL") ?? "unknown",
                     CommitMessage = Environment.GetEnvironmentVariable("DD_GIT_COMMIT_MESSAGE") ?? "unknown"
                 },
                 Deployment = new
@@ -119,9 +116,9 @@ namespace simple_iis_app.Controllers
                 }
             };
 
-            _logger.LogInformation("Metrics endpoint accessed by {User} - Git SHA: {GitSha}", 
+            _logger.LogInformation("Metrics endpoint accessed by {User} - Git Branch: {GitBranch}", 
                 User.Identity?.Name ?? "Anonymous", 
-                Environment.GetEnvironmentVariable("DD_GIT_COMMIT_SHA") ?? "unknown");
+                Environment.GetEnvironmentVariable("DD_GIT_BRANCH") ?? "unknown");
 
             return Json(metrics);
         }
@@ -132,10 +129,7 @@ namespace simple_iis_app.Controllers
         {
             var gitInfo = new
             {
-                CommitSha = Environment.GetEnvironmentVariable("DD_GIT_COMMIT_SHA") ?? "unknown",
-                CommitShaShort = Environment.GetEnvironmentVariable("DD_GIT_COMMIT_SHA_SHORT") ?? "unknown", 
                 Branch = Environment.GetEnvironmentVariable("DD_GIT_BRANCH") ?? "unknown",
-                RepositoryUrl = Environment.GetEnvironmentVariable("DD_GIT_REPOSITORY_URL") ?? "unknown",
                 CommitMessage = Environment.GetEnvironmentVariable("DD_GIT_COMMIT_MESSAGE") ?? "unknown",
                 DeploymentVersion = Environment.GetEnvironmentVariable("DD_DEPLOYMENT_VERSION") ?? "unknown",
                 DeploymentTime = Environment.GetEnvironmentVariable("DD_DEPLOYMENT_TIME") ?? "unknown",
@@ -157,15 +151,15 @@ namespace simple_iis_app.Controllers
             _logger.LogInformation("🔍 DEBUG: TriggerError called with errorType: {ErrorType}", errorType);
             Console.WriteLine($"🔍 DEBUG: TriggerError called with errorType: {errorType}");
             
-            var gitSha = Environment.GetEnvironmentVariable("DD_GIT_COMMIT_SHA") ?? "unknown";
+            var gitBranch = Environment.GetEnvironmentVariable("DD_GIT_BRANCH") ?? "unknown";
             var user = User.Identity?.Name ?? "Anonymous";
             var timestamp = DateTime.UtcNow;
             var userAgent = Request.Headers["User-Agent"].ToString();
             var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             
-            _logger.LogWarning("🚨 INTENTIONAL ERROR TRIGGER - User: {User}, Type: {ErrorType}, Git SHA: {GitSha}, Timestamp: {Timestamp}, IP: {ClientIp}, UserAgent: {UserAgent}", 
-                user, errorType, gitSha, timestamp, clientIp, userAgent);
-            Console.WriteLine($"🚨 INTENTIONAL ERROR TRIGGER - User: {user}, Type: {errorType}");
+            _logger.LogWarning("🚨 INTENTIONAL ERROR TRIGGER - User: {User}, Type: {ErrorType}, Git Branch: {GitBranch}, Timestamp: {Timestamp}, IP: {ClientIp}, UserAgent: {UserAgent}", 
+                user, errorType, gitBranch, timestamp, clientIp, userAgent);
+            Console.WriteLine($"🚨 INTENTIONAL ERROR TRIGGER - User: {user}, Type: {errorType}, Branch: {gitBranch}");
 
             try
             {

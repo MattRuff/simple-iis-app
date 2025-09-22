@@ -61,10 +61,7 @@ The deployment script automatically sets:
 
 ### **Git & Deployment Tracking**
 ```bash
-DD_GIT_COMMIT_SHA=<actual-git-sha>
-DD_GIT_COMMIT_SHA_SHORT=<short-sha>
 DD_GIT_BRANCH=<branch-name>
-DD_GIT_REPOSITORY_URL=https://github.com/MattRuff/simple-iis-app.git
 DD_GIT_COMMIT_MESSAGE=<commit-message>
 DD_DEPLOYMENT_VERSION=<timestamp>
 DD_DEPLOYMENT_TIME=<deployment-time>

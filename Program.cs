@@ -23,11 +23,9 @@ var app = builder.Build();
 
 // Log Datadog environment variables for observability
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
-var gitCommitSha = Environment.GetEnvironmentVariable("DD_GIT_COMMIT_SHA") ?? "unknown";
-var gitRepositoryUrl = Environment.GetEnvironmentVariable("DD_GIT_REPOSITORY_URL") ?? "unknown";
+var gitBranch = Environment.GetEnvironmentVariable("DD_GIT_BRANCH") ?? "unknown";
 
-logger.LogInformation("🔍 Datadog Git Info - Commit SHA: {CommitSha}", gitCommitSha);
-logger.LogInformation("🔍 Datadog Git Info - Repository URL: {RepositoryUrl}", gitRepositoryUrl);
+logger.LogInformation("🔍 Datadog Git Info - Branch: {GitBranch}", gitBranch);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

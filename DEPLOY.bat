@@ -217,10 +217,7 @@ echo 🔍 STEP 7: Setting up deployment environment...
 for /f "usebackq delims=" %%i in (`powershell -command "Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'" 2^>nul`) do set "timestamp=%%i"
 if "%timestamp%"=="" set "timestamp=deploy_%RANDOM%"
 
-set DD_GIT_COMMIT_SHA=step-deploy-%timestamp%
-set DD_GIT_COMMIT_SHA_SHORT=step-%RANDOM%
 set DD_GIT_BRANCH=main-step
-set DD_GIT_REPOSITORY_URL=https://github.com/MattRuff/simple-iis-app.git
 set DD_GIT_COMMIT_MESSAGE=Step-by-step deployment at %date% %time%
 set DD_DEPLOYMENT_VERSION=%timestamp%
 set DD_DEPLOYMENT_TIME=%date% %time%
@@ -760,6 +757,7 @@ echo.
 call :log_message "=== SCRIPT COMPLETED ==="
 echo Press any key to exit...
 pause >nul
+exit /b 0
 
 :: Function to log with timestamp (placed at end to avoid execution flow issues)
 :log_message
