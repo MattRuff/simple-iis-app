@@ -62,6 +62,11 @@ deploy.bat
 - ✅ Publishes to `bin\Release\net9.0\publish`
 - ✅ Creates IIS directory: `C:\inetpub\wwwroot\SimpleIISApp`
 - ✅ Copies files to IIS directory automatically
+- 📝 **Creates comprehensive logs** in `logs/` folder for debugging
+  - Main deployment log
+  - NuGet/package resolution log  
+  - Build/publish detailed log
+  - Environment/system debug log
 
 ### Step 2: Configure IIS
 
@@ -292,12 +297,15 @@ When successfully deployed, the application will display:
 
 ## 🔍 Troubleshooting
 
+📝 **For deployment issues**: Check the detailed logs created in the `logs/` folder. See `LOGS-README.md` for a complete guide to using the logging system for debugging.
+
 ### Common Issues:
 
 1. **500.19 Error**: ASP.NET Core Module V2 not installed
 2. **500.30 Error**: .NET 9.0 Runtime not installed
 3. **403 Error**: Check folder permissions
 4. **404 Error**: Verify site binding and physical path
+5. **NuGet/SourceLink Issues**: Check `logs/nuget_*.log` and `logs/debug_*.log`
 
 ### Verify Installation:
 

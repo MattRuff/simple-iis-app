@@ -1,6 +1,22 @@
 @echo off
 setlocal EnableDelayedExpansion
 
+:: Setup logging
+if not exist "logs" mkdir "logs"
+for /f "usebackq delims=" %%i in (`powershell -command "Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'" 2^>nul`) do set "LOG_TIMESTAMP=%%i"
+if "%LOG_TIMESTAMP%"=="" set "LOG_TIMESTAMP=deploy_%RANDOM%"
+
+set "MAIN_LOG=logs\deploy_%LOG_TIMESTAMP%.log"
+set "DEBUG_LOG=logs\debug_%LOG_TIMESTAMP%.log"
+set "NUGET_LOG=logs\nuget_%LOG_TIMESTAMP%.log"
+set "BUILD_LOG=logs\build_%LOG_TIMESTAMP%.log"
+
+:: Function to log with timestamp
+:log_message
+echo [%time%] %~1 >> "%MAIN_LOG%"
+echo %~1
+goto :eof
+
 echo ========================================
 echo Simple IIS App - Step-by-Step Deploy
 echo ========================================
@@ -8,11 +24,25 @@ echo.
 echo This script will deploy your application step by step.
 echo Press ENTER at each step to continue.
 echo.
+echo 📝 Logging to: %MAIN_LOG%
+echo 🔍 Debug log: %DEBUG_LOG%
+echo 📦 NuGet log: %NUGET_LOG%
+echo 🔨 Build log: %BUILD_LOG%
+echo.
+
+call :log_message "=== DEPLOYMENT STARTED ==="
+call :log_message "Timestamp: %LOG_TIMESTAMP%"
+call :log_message "Current Directory: %CD%"
+call :log_message "User: %USERNAME%"
+call :log_message "Computer: %COMPUTERNAME%"
+
 pause
 
 echo 🔍 STEP 1: Checking Administrator privileges...
+call :log_message "STEP 1: Checking Administrator privileges"
 net session >nul 2>&1
 if %errorlevel% neq 0 (
+    call :log_message "ERROR: Not running as Administrator"
     echo ❌ NOT running as Administrator!
     echo.
     echo You MUST right-click this file and select "Run as administrator"
@@ -21,6 +51,7 @@ if %errorlevel% neq 0 (
     pause >nul
     exit /b 1
 ) else (
+    call :log_message "SUCCESS: Running as Administrator"
     echo ✅ Running as Administrator
 )
 echo.
@@ -98,8 +129,15 @@ echo.
 pause
 
 echo 🔍 STEP 4: Checking .NET installation...
+call :log_message "STEP 4: Checking .NET installation"
+
+:: Detailed .NET debugging
+echo 🐛 DEBUG: Checking .NET environment...
+call :log_message "=== .NET ENVIRONMENT DEBUG ==="
+
 dotnet --version >nul 2>&1
 if %errorlevel% neq 0 (
+    call :log_message "ERROR: .NET CLI not found"
     echo ❌ .NET CLI not found!
     echo.
     echo Install .NET 9.0 SDK from: https://dotnet.microsoft.com/download/dotnet/9.0
@@ -109,8 +147,27 @@ if %errorlevel% neq 0 (
     exit /b 1
 ) else (
     for /f %%i in ('dotnet --version 2^>nul') do set DOTNET_VERSION=%%i
+    call :log_message "SUCCESS: .NET version: !DOTNET_VERSION!"
     echo ✅ .NET version: !DOTNET_VERSION!
 )
+
+:: Log detailed .NET info
+echo   🔍 Gathering detailed .NET information...
+dotnet --info >> "%DEBUG_LOG%" 2>&1
+call :log_message "Detailed .NET info logged to debug file"
+
+:: Log NuGet sources
+echo   🔍 Checking NuGet sources...
+dotnet nuget list source >> "%NUGET_LOG%" 2>&1
+call :log_message "NuGet sources logged"
+
+:: Log current packages
+echo   🔍 Checking current package references...
+if exist "simple-iis-app.csproj" (
+    type "simple-iis-app.csproj" >> "%DEBUG_LOG%"
+    call :log_message "Project file contents logged"
+)
+
 echo.
 pause
 
@@ -212,36 +269,96 @@ echo.
 pause
 
 echo 🔍 STEP 9: Building application...
+call :log_message "STEP 9: Building application"
 echo Running: dotnet build -c Release
 echo.
-dotnet build -c Release
-if %ERRORLEVEL% neq 0 (
+
+:: Clear NuGet cache first
+echo   🔧 Clearing NuGet cache to resolve potential package issues...
+call :log_message "Clearing NuGet cache"
+dotnet nuget locals all --clear >> "%NUGET_LOG%" 2>&1
+
+:: Detailed restore with logging
+echo   🔧 Running detailed package restore...
+call :log_message "Starting package restore with detailed logging"
+dotnet restore --verbosity detailed >> "%NUGET_LOG%" 2>&1
+set RESTORE_RESULT=%ERRORLEVEL%
+call :log_message "Restore completed with exit code: %RESTORE_RESULT%"
+
+if %RESTORE_RESULT% neq 0 (
+    echo ❌ Package restore failed! Check logs for details.
+    call :log_message "ERROR: Package restore failed"
     echo.
-    echo ❌ Build failed! Check the errors above.
+    echo 📝 Check these log files for detailed error information:
+    echo    NuGet log: %NUGET_LOG%
+    echo    Debug log: %DEBUG_LOG%
     echo.
-    echo Press any key to exit...
-    pause >nul
+    
+    :: Show last few lines of NuGet log
+    echo 🔍 Last 10 lines of NuGet log:
+    powershell -Command "Get-Content '%NUGET_LOG%' | Select-Object -Last 10"
+    echo.
+    
+    pause
     exit /b 1
 )
-echo.
+
+:: Build with detailed logging
+call :log_message "Starting build"
+dotnet build -c Release --verbosity detailed >> "%BUILD_LOG%" 2>&1
+set BUILD_RESULT=%ERRORLEVEL%
+call :log_message "Build completed with exit code: %BUILD_RESULT%"
+
+if %BUILD_RESULT% neq 0 (
+    echo ❌ Build failed! Check logs for details.
+    call :log_message "ERROR: Build failed"
+    echo.
+    echo 📝 Check these log files for detailed error information:
+    echo    Build log: %BUILD_LOG%
+    echo    NuGet log: %NUGET_LOG%
+    echo.
+    
+    :: Show last few lines of build log
+    echo 🔍 Last 10 lines of build log:
+    powershell -Command "Get-Content '%BUILD_LOG%' | Select-Object -Last 10"
+    echo.
+    
+    pause
+    exit /b 1
+)
+
 echo ✅ Build successful!
+call :log_message "SUCCESS: Build completed successfully"
 echo.
 pause
 
 echo 🔍 STEP 10: Publishing application...
+call :log_message "STEP 10: Publishing application"
 echo Running: dotnet publish -c Release -o bin\Release\net9.0\publish
 echo.
-dotnet publish -c Release -o bin\Release\net9.0\publish
-if %ERRORLEVEL% neq 0 (
+
+dotnet publish -c Release -o bin\Release\net9.0\publish --verbosity detailed >> "%BUILD_LOG%" 2>&1
+set PUBLISH_RESULT=%ERRORLEVEL%
+call :log_message "Publish completed with exit code: %PUBLISH_RESULT%"
+
+if %PUBLISH_RESULT% neq 0 (
+    echo ❌ Publish failed! Check logs for details.
+    call :log_message "ERROR: Publish failed"
     echo.
-    echo ❌ Publish failed! Check the errors above.
+    echo 📝 Check build log: %BUILD_LOG%
     echo.
-    echo Press any key to exit...
-    pause >nul
+    
+    :: Show last few lines of build log
+    echo 🔍 Last 10 lines of build log:
+    powershell -Command "Get-Content '%BUILD_LOG%' | Select-Object -Last 10"
+    echo.
+    
+    pause
     exit /b 1
 )
-echo.
+
 echo ✅ Publish successful!
+call :log_message "SUCCESS: Publish completed successfully"
 echo.
 pause
 
@@ -554,8 +671,17 @@ echo ========================================
 echo 🎉 DEPLOYMENT COMPLETED! 🎉
 echo ========================================
 echo.
+call :log_message "=== DEPLOYMENT COMPLETED SUCCESSFULLY ==="
+call :log_message "Files deployed to: C:\inetpub\wwwroot\simple-iis-app\"
+
 echo ✅ Application built and deployed successfully
 echo ✅ Files location: C:\inetpub\wwwroot\simple-iis-app\
+echo.
+echo 📝 Log files created for debugging:
+echo    📄 Main log: %MAIN_LOG%
+echo    🔍 Debug log: %DEBUG_LOG%
+echo    📦 NuGet log: %NUGET_LOG%
+echo    🔨 Build log: %BUILD_LOG%
 echo ✅ IIS Application Pool: simple-iis-app (No Managed Code)
 echo ✅ IIS Website: simple-iis-app on port 8080
 echo.
@@ -619,5 +745,6 @@ echo ================================
 echo Deployment completed at %date% %time%
 echo ================================
 echo.
+call :log_message "=== SCRIPT COMPLETED ==="
 echo Press any key to exit...
 pause >nul
