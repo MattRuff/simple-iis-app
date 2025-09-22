@@ -11,12 +11,10 @@ set "DEBUG_LOG=logs\debug_%LOG_TIMESTAMP%.log"
 set "NUGET_LOG=logs\nuget_%LOG_TIMESTAMP%.log"
 set "BUILD_LOG=logs\build_%LOG_TIMESTAMP%.log"
 
-:: Function to log with timestamp
-:log_message
-echo [%time%] %~1 >> "%MAIN_LOG%"
-echo %~1
-goto :eof
+:: Jump to main script
+goto :main
 
+:main
 echo ========================================
 echo Simple IIS App - Step-by-Step Deploy
 echo ========================================
@@ -748,3 +746,9 @@ echo.
 call :log_message "=== SCRIPT COMPLETED ==="
 echo Press any key to exit...
 pause >nul
+
+:: Function to log with timestamp (placed at end to avoid execution flow issues)
+:log_message
+echo [%time%] %~1 >> "%MAIN_LOG%"
+echo %~1
+goto :eof
