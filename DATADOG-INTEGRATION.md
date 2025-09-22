@@ -69,12 +69,21 @@ DD_DEPLOYMENT_TIME=<deployment-time>
 
 ### **Datadog .NET Tracer Configuration** ⭐ **NEW**
 ```bash
+# Core Configuration
 DD_ENV=testing
+DD_API_KEY=your-datadog-api-key-here
+# DD_SITE not set - uses Datadog default (datadoghq.com/US1)
+
+# Logging Configuration
 DD_LOGS_INJECTION=true
+DD_LOGS_DIRECT_SUBMISSION_INTEGRATIONS=Serilog
+
+# Monitoring Features
 DD_RUNTIME_METRICS_ENABLED=true
 DD_PROFILING_ENABLED=true
 DD_CODE_ORIGIN_FOR_SPANS_ENABLED=true
 DD_EXCEPTION_REPLAY_ENABLED=true
+DD_IAST_ENABLED=true
 ```
 
 These machine-level variables configure the Datadog .NET tracer for:
@@ -82,6 +91,10 @@ These machine-level variables configure the Datadog .NET tracer for:
 - ✅ **Automatic log injection** with trace correlation
 - ✅ **Runtime metrics** (GC, memory, CPU usage)
 - ✅ **Continuous profiling** for performance analysis
+- ✅ **Agentless Serilog logging** with direct submission to Datadog
+- ✅ **Code origin tracking** for spans (links to source code via SourceLink)
+- ✅ **Exception replay** with additional debugging context
+- ✅ **Interactive Application Security Testing (IAST)** for vulnerability detection
 
 All variables are available to your application and Datadog for comprehensive observability.
 

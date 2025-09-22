@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
@@ -22,6 +23,12 @@ namespace simple_iis_app.Controllers
             ViewBag.OSVersion = Environment.OSVersion.ToString();
             ViewBag.DotNetVersion = Environment.Version.ToString();
             ViewBag.IsAuthenticated = User.Identity?.IsAuthenticated ?? false;
+            
+            // Enhanced Serilog logging with structured data
+            Log.Information("🏠 Home page accessed by {User} from {UserAgent} at {IpAddress}", 
+                User.Identity?.Name ?? "Anonymous",
+                Request.Headers["User-Agent"].ToString(),
+                HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown");
             
             return View();
         }

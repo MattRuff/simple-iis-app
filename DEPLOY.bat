@@ -126,9 +126,13 @@ pause
 
 echo 🔍 STEP 5: Setting up Datadog environment variables...
 echo   🔧 Setting Datadog machine-level environment variables...
-powershell -Command "$target=[System.EnvironmentVariableTarget]::Machine; try { [System.Environment]::SetEnvironmentVariable('DD_ENV','testing',$target); Write-Host '   ✅ DD_ENV=testing'; [System.Environment]::SetEnvironmentVariable('DD_LOGS_INJECTION','true',$target); Write-Host '   ✅ DD_LOGS_INJECTION=true'; [System.Environment]::SetEnvironmentVariable('DD_RUNTIME_METRICS_ENABLED','true',$target); Write-Host '   ✅ DD_RUNTIME_METRICS_ENABLED=true'; [System.Environment]::SetEnvironmentVariable('DD_CODE_ORIGIN_FOR_SPANS_ENABLED','true',$target); Write-Host '   ✅ DD_CODE_ORIGIN_FOR_SPANS_ENABLED=true'; [System.Environment]::SetEnvironmentVariable('DD_EXCEPTION_REPLAY_ENABLED','true',$target); Write-Host '   ✅ DD_EXCEPTION_REPLAY_ENABLED=true'; Write-Host '   ✅ All Datadog environment variables set' } catch { Write-Host '   ❌ Error setting Datadog variables' }"
+powershell -Command "$target=[System.EnvironmentVariableTarget]::Machine; try { [System.Environment]::SetEnvironmentVariable('DD_ENV','testing',$target); Write-Host '   ✅ DD_ENV=testing'; [System.Environment]::SetEnvironmentVariable('DD_LOGS_INJECTION','true',$target); Write-Host '   ✅ DD_LOGS_INJECTION=true'; [System.Environment]::SetEnvironmentVariable('DD_LOGS_DIRECT_SUBMISSION_INTEGRATIONS','Serilog',$target); Write-Host '   ✅ DD_LOGS_DIRECT_SUBMISSION_INTEGRATIONS=Serilog'; [System.Environment]::SetEnvironmentVariable('DD_RUNTIME_METRICS_ENABLED','true',$target); Write-Host '   ✅ DD_RUNTIME_METRICS_ENABLED=true'; [System.Environment]::SetEnvironmentVariable('DD_PROFILING_ENABLED','true',$target); Write-Host '   ✅ DD_PROFILING_ENABLED=true'; [System.Environment]::SetEnvironmentVariable('DD_CODE_ORIGIN_FOR_SPANS_ENABLED','true',$target); Write-Host '   ✅ DD_CODE_ORIGIN_FOR_SPANS_ENABLED=true'; [System.Environment]::SetEnvironmentVariable('DD_EXCEPTION_REPLAY_ENABLED','true',$target); Write-Host '   ✅ DD_EXCEPTION_REPLAY_ENABLED=true'; [System.Environment]::SetEnvironmentVariable('DD_IAST_ENABLED','true',$target); Write-Host '   ✅ DD_IAST_ENABLED=true'; Write-Host '   ✅ All Datadog environment variables set (DD_SITE uses default)' } catch { Write-Host '   ❌ Error setting Datadog variables' }"
 
 echo ✅ Datadog environment configured
+echo.
+echo ⚠️  IMPORTANT: Set your Datadog API key manually:
+echo   [System.Environment]::SetEnvironmentVariable('DD_API_KEY','your-actual-api-key',[System.EnvironmentVariableTarget]::Machine)
+echo   Or add it to web.config: ^<environmentVariable name="DD_API_KEY" value="your-api-key" /^>
 echo.
 pause
 
@@ -264,6 +268,7 @@ echo   • 💓 Health monitoring
 echo   • 🐛 Error testing for Datadog
 echo   • 📊 Metrics endpoints
 echo   • 🔗 SourceLink for code debugging
+echo   • 📝 Agentless Serilog logging to Datadog
 echo.
 call :log_message "=== SCRIPT COMPLETED ==="
 echo Press any key to exit...
