@@ -152,6 +152,25 @@ set DD_GIT_REPOSITORY_URL=https://github.com/MattRuff/simple-iis-app.git
 set DD_GIT_COMMIT_MESSAGE=Step-by-step deployment at %date% %time%
 set DD_DEPLOYMENT_VERSION=%timestamp%
 set DD_DEPLOYMENT_TIME=%date% %time%
+
+echo   🔧 Setting Datadog machine-level environment variables...
+echo 🐛 DEBUG: Running PowerShell command to set Datadog environment variables...
+powershell -Command "$target=[System.EnvironmentVariableTarget]::Machine; try { [System.Environment]::SetEnvironmentVariable('DD_ENV','testing',$target); Write-Host '   ✅ DD_ENV=testing'; [System.Environment]::SetEnvironmentVariable('DD_LOGS_INJECTION','true',$target); Write-Host '   ✅ DD_LOGS_INJECTION=true'; [System.Environment]::SetEnvironmentVariable('DD_RUNTIME_METRICS_ENABLED','true',$target); Write-Host '   ✅ DD_RUNTIME_METRICS_ENABLED=true'; [System.Environment]::SetEnvironmentVariable('DD_PROFILING_ENABLED','true',$target); Write-Host '   ✅ DD_PROFILING_ENABLED=true'; Write-Host '   ✅ All Datadog environment variables set at machine level' } catch { Write-Host '   ❌ Error setting Datadog variables:' $_.Exception.Message; exit 1 }"
+set DATADOG_ENV_RESULT=%ERRORLEVEL%
+echo 🐛 DEBUG: Datadog environment variables result: %DATADOG_ENV_RESULT%
+
+if %DATADOG_ENV_RESULT% neq 0 (
+    echo   ⚠️ Could not set machine-level Datadog variables
+    echo   This may happen if not running with sufficient privileges
+    echo   You can set these manually in System Environment Variables:
+    echo   • DD_ENV=testing
+    echo   • DD_LOGS_INJECTION=true  
+    echo   • DD_RUNTIME_METRICS_ENABLED=true
+    echo   • DD_PROFILING_ENABLED=true
+) else (
+    echo   ✅ Datadog configuration applied successfully
+)
+
 echo ✅ Environment variables set
 echo   Timestamp: %timestamp%
 echo.

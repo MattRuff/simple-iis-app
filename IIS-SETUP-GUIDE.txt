@@ -9,7 +9,7 @@
 📋 QUICK CHECKLIST:
 ================================================================================
 
-□ Run DEPLOY.bat as Administrator (builds app files)
+□ Run DEPLOY.bat as Administrator (builds app files + sets Datadog environment variables)
 □ Open IIS Manager (inetmgr)
 □ Create Application Pool: "simple-iis-app" (No Managed Code)
 □ Create Website: "simple-iis-app" on port 8080
@@ -116,5 +116,13 @@ If these files are missing, re-run DEPLOY.bat as Administrator.
 ✅ No errors in:
    • Windows Event Viewer → Application logs
    • IIS logs (if enabled)
+
+✅ Datadog environment variables set (if DEPLOY.bat ran successfully):
+   • DD_ENV=testing
+   • DD_LOGS_INJECTION=true
+   • DD_RUNTIME_METRICS_ENABLED=true
+   • DD_PROFILING_ENABLED=true
+
+   (Check: System Properties → Environment Variables → System variables)
 
 ================================================================================

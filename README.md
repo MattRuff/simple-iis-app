@@ -12,6 +12,7 @@ A demonstration ASP.NET Core application for testing IIS deployment, authenticat
 - 🎨 **Modern UI**: Beautiful responsive interface with auth status
 - 📦 **Self-Contained**: No external dependencies or databases
 - 🔒 **HTTP-Only**: Works without SSL certificates for testing
+- 🔗 **SourceLink Integration**: Datadog can extract git commit SHA and repository URL from the .NET assembly
 
 ## 📥 **FIRST: Download Required Software**
 

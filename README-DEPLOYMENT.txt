@@ -53,6 +53,8 @@ FEATURES INCLUDED:
 🐛 Error testing for monitoring
 🔍 Git deployment tracking
 📝 Structured logging
+🔗 SourceLink integration (Datadog can extract git info from assembly)
+⚡ Automatic Datadog .NET tracer configuration (logs injection, profiling, runtime metrics)
 
 ===========================================
 📋 MANUAL IIS SETUP (REQUIRED):
