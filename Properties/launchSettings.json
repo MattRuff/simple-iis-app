@@ -8,7 +8,7 @@
     }
   },
   "profiles": {
-    "SimpleIISApp": {
+    "simple-iis-app": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
