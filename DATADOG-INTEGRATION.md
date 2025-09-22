@@ -73,6 +73,8 @@ DD_ENV=testing
 DD_LOGS_INJECTION=true
 DD_RUNTIME_METRICS_ENABLED=true
 DD_PROFILING_ENABLED=true
+DD_CODE_ORIGIN_FOR_SPANS_ENABLED=true
+DD_EXCEPTION_REPLAY_ENABLED=true
 ```
 
 These machine-level variables configure the Datadog .NET tracer for:
