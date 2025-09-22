@@ -138,8 +138,8 @@ namespace simple_iis_app.Controllers
                 Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"
             };
 
-            _logger.LogInformation("Git info endpoint accessed - SHA: {GitSha}, Repo: {Repo}", 
-                gitInfo.CommitSha, gitInfo.RepositoryUrl);
+            _logger.LogInformation("Git info endpoint accessed - Branch: {GitBranch}, Version: {Version}", 
+                gitInfo.Branch, gitInfo.DeploymentVersion);
 
             return Json(gitInfo);
         }
