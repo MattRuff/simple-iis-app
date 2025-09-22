@@ -1,55 +1,55 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-:: ============================================================================
-:: Simple IIS App - Universal Deployment Script
-:: ============================================================================
-:: This script works on any clean Windows environment after downloading ZIP
-:: Requirements: .NET 9.0 SDK + IIS installed + Run as Administrator
-:: ============================================================================
-
+echo ========================================
+echo Simple IIS App - Step-by-Step Deploy
+echo ========================================
 echo.
-echo ================================
-echo  Simple IIS App - Deployment
-echo ================================
+echo This script will deploy your application step by step.
+echo Press ENTER at each step to continue.
 echo.
+pause
 
-:: Check for administrator privileges
-echo [1/9] Checking Administrator privileges...
+echo 🔍 STEP 1: Checking Administrator privileges...
 net session >nul 2>&1
 if %errorlevel% neq 0 (
-    echo ❌ REQUIRES ADMINISTRATOR PRIVILEGES!
+    echo ❌ NOT running as Administrator!
     echo.
-    echo   Right-click this file and select "Run as administrator"
+    echo You MUST right-click this file and select "Run as administrator"
     echo.
-    echo Exiting in 10 seconds...
-    timeout /t 10 >nul
+    echo Press any key to exit...
+    pause >nul
     exit /b 1
+) else (
+    echo ✅ Running as Administrator
 )
-echo ✅ Running as Administrator
 echo.
+pause
 
-:: Check if we're in the right directory
-echo [2/9] Verifying project structure...
+echo 🔍 STEP 2: Checking current directory and project structure...
+echo Current directory: %CD%
+echo.
+echo Files in this directory:
+dir /B
+echo.
 if not exist "simple-iis-app.csproj" (
     echo ❌ FATAL ERROR: simple-iis-app.csproj not found!
     echo.
-    echo 🔍 Current directory: %CD%
+    echo You are NOT in the simple-iis-app project folder!
+    echo Navigate to the correct folder and try again.
     echo.
-    echo Make sure you:
-    echo 1. Downloaded the ZIP file from GitHub
-    echo 2. Extracted it completely 
-    echo 3. Are running this script from inside the project folder
-    echo.
-    echo Exiting in 10 seconds...
-    timeout /t 10 >nul
+    echo Press any key to exit...
+    pause >nul
     exit /b 1
+) else (
+    echo ✅ Found simple-iis-app.csproj - correct directory
 )
-echo ✅ Project structure verified
 echo.
+pause
 
-:: Fix any namespace issues from GitHub download
-echo [3/9] Auto-fixing GitHub download namespace issues...
+echo 🔍 STEP 3: Auto-fixing GitHub download namespace issues...
+echo Checking for namespace issues that cause build errors...
+echo.
 
 :: Fix Views\_ViewImports.cshtml
 if exist "Views\_ViewImports.cshtml" (
@@ -57,9 +57,9 @@ if exist "Views\_ViewImports.cshtml" (
     if !errorlevel! equ 0 (
         echo   🔧 Fixing Views\_ViewImports.cshtml namespace...
         powershell -Command "(Get-Content 'Views\_ViewImports.cshtml') -replace 'SimpleIISApp', 'simple_iis_app' | Set-Content 'Views\_ViewImports.cshtml'" 2>nul
-        echo   ✓ Fixed Views\_ViewImports.cshtml
+        echo   ✅ Fixed Views\_ViewImports.cshtml
     ) else (
-        echo   ✓ Views\_ViewImports.cshtml already correct
+        echo   ✅ Views\_ViewImports.cshtml already correct
     )
 ) else (
     echo   ⚠️ Views\_ViewImports.cshtml not found
@@ -71,9 +71,9 @@ if exist "GlobalUsings.cs" (
     if !errorlevel! equ 0 (
         echo   🔧 Fixing GlobalUsings.cs comment...
         powershell -Command "(Get-Content 'GlobalUsings.cs') -replace 'SimpleIISApp', 'simple-iis-app' | Set-Content 'GlobalUsings.cs'" 2>nul
-        echo   ✓ Fixed GlobalUsings.cs
+        echo   ✅ Fixed GlobalUsings.cs
     ) else (
-        echo   ✓ GlobalUsings.cs already correct
+        echo   ✅ GlobalUsings.cs already correct
     )
 )
 
@@ -83,140 +83,168 @@ if exist "Properties\launchSettings.json" (
     if !errorlevel! equ 0 (
         echo   🔧 Fixing Properties\launchSettings.json...
         powershell -Command "(Get-Content 'Properties\launchSettings.json') -replace '\"SimpleIISApp\":', '\"simple-iis-app\":' | Set-Content 'Properties\launchSettings.json'" 2>nul
-        echo   ✓ Fixed launchSettings.json
+        echo   ✅ Fixed launchSettings.json
     ) else (
-        echo   ✓ launchSettings.json already correct
+        echo   ✅ launchSettings.json already correct
     )
 )
 
-echo ✅ Namespace fixes completed
 echo.
+echo ✅ Namespace fixes completed (if any were needed)
+echo.
+pause
 
-:: Check .NET installation
-echo [4/9] Checking .NET 9.0 SDK...
+echo 🔍 STEP 4: Checking .NET installation...
 dotnet --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo ❌ .NET SDK not found!
+    echo ❌ .NET CLI not found!
     echo.
-    echo   Download and install .NET 9.0 SDK from:
-    echo   https://dotnet.microsoft.com/download/dotnet/9.0
+    echo Install .NET 9.0 SDK from: https://dotnet.microsoft.com/download/dotnet/9.0
     echo.
-    echo Exiting in 15 seconds...
-    timeout /t 15 >nul
+    echo Press any key to exit...
+    pause >nul
     exit /b 1
+) else (
+    for /f %%i in ('dotnet --version 2^>nul') do set DOTNET_VERSION=%%i
+    echo ✅ .NET version: !DOTNET_VERSION!
 )
-
-for /f %%i in ('dotnet --version 2^>nul') do set DOTNET_VERSION=%%i
-echo ✅ .NET version: %DOTNET_VERSION%
 echo.
+pause
 
-:: Check IIS installation
-echo [5/9] Checking IIS installation...
+echo 🔍 STEP 5: Checking IIS directory access...
 if not exist "C:\inetpub\wwwroot" (
-    echo ❌ IIS not found!
+    echo ❌ C:\inetpub\wwwroot does not exist!
+    echo IIS may not be installed properly.
     echo.
-    echo   Please install IIS using:
-    echo   1. Control Panel → Programs → Turn Windows features on/off
-    echo   2. Check "Internet Information Services"
-    echo   3. Check "IIS Management Console"
-    echo   4. Check "ASP.NET Core Module V2"
+    echo Press any key to exit...
+    pause >nul
+    exit /b 1
+) else (
+    echo ✅ C:\inetpub\wwwroot exists
+)
+echo.
+pause
+
+echo 🔍 STEP 6: Testing directory creation permissions...
+mkdir "C:\inetpub\wwwroot\simple-iis-app-test" 2>nul
+if exist "C:\inetpub\wwwroot\simple-iis-app-test" (
+    echo ✅ Can create directories in C:\inetpub\wwwroot
+    rmdir "C:\inetpub\wwwroot\simple-iis-app-test" 2>nul
+) else (
+    echo ❌ Cannot create directories in C:\inetpub\wwwroot
+    echo This usually means insufficient permissions.
     echo.
-    echo Exiting in 15 seconds...
-    timeout /t 15 >nul
+    echo Press any key to exit...
+    pause >nul
     exit /b 1
 )
-echo ✅ IIS installation verified
 echo.
+pause
 
-:: Set deployment environment variables
-echo [6/9] Setting deployment environment...
+echo 🔍 STEP 7: Setting up deployment environment...
 for /f "usebackq delims=" %%i in (`powershell -command "Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'" 2^>nul`) do set "timestamp=%%i"
 if "%timestamp%"=="" set "timestamp=deploy_%RANDOM%"
 
-set DD_GIT_COMMIT_SHA=zip-deploy-%timestamp%
-set DD_GIT_COMMIT_SHA_SHORT=zip-%RANDOM%
-set DD_GIT_BRANCH=main-zip
+set DD_GIT_COMMIT_SHA=step-deploy-%timestamp%
+set DD_GIT_COMMIT_SHA_SHORT=step-%RANDOM%
+set DD_GIT_BRANCH=main-step
 set DD_GIT_REPOSITORY_URL=https://github.com/MattRuff/simple-iis-app.git
-set DD_GIT_COMMIT_MESSAGE=ZIP deployment on %COMPUTERNAME% at %date% %time%
+set DD_GIT_COMMIT_MESSAGE=Step-by-step deployment at %date% %time%
 set DD_DEPLOYMENT_VERSION=%timestamp%
 set DD_DEPLOYMENT_TIME=%date% %time%
-echo ✅ Environment configured
+echo ✅ Environment variables set
+echo   Timestamp: %timestamp%
 echo.
+pause
 
-:: Clean and prepare for build
-echo [7/9] Preparing build environment...
-if exist "bin" rmdir /s /q "bin" 2>nul
-if exist "obj" rmdir /s /q "obj" 2>nul
-if exist "logs" rmdir /s /q "logs" 2>nul
+echo 🔍 STEP 8: Cleaning previous builds and preparing IIS...
+if exist "bin\Release\net9.0\publish" (
+    echo   Cleaning previous publish folder...
+    rmdir /s /q "bin\Release\net9.0\publish" 2>nul
+)
+if exist "bin\Debug" (
+    echo   Cleaning debug folder...
+    rmdir /s /q "bin\Debug" 2>nul
+)
+if exist "obj" (
+    echo   Cleaning obj folder...
+    rmdir /s /q "obj" 2>nul
+)
 
-:: Clean IIS environment
 if exist "C:\inetpub\wwwroot\simple-iis-app" (
+    echo   Cleaning existing IIS directory...
     rmdir /s /q "C:\inetpub\wwwroot\simple-iis-app" 2>nul
 )
 
-:: Create IIS directory
+echo   Creating fresh IIS directory...
 mkdir "C:\inetpub\wwwroot\simple-iis-app" 2>nul
 if not exist "C:\inetpub\wwwroot\simple-iis-app" (
-    echo ❌ Cannot create IIS directory!
-    echo   Ensure you're running as Administrator
+    echo ❌ Failed to create C:\inetpub\wwwroot\simple-iis-app
     echo.
-    echo Exiting in 10 seconds...
-    timeout /t 10 >nul
+    echo Press any key to exit...
+    pause >nul
     exit /b 1
 )
-echo ✅ Build environment ready
+echo ✅ Build environment prepared
 echo.
+pause
 
-:: Build and publish application
-echo [8/9] Building and publishing application...
-echo   Building...
-dotnet build -c Release --verbosity quiet >nul 2>&1
-if %ERRORLEVEL% neq 0 (
-    echo ❌ BUILD FAILED!
-    echo.
-    echo   Running detailed build to show errors:
-    echo.
-    dotnet build -c Release
-    echo.
-    echo Exiting in 15 seconds...
-    timeout /t 15 >nul
-    exit /b 1
-)
-
-echo   Publishing...
-dotnet publish -c Release -o bin\Release\net9.0\publish --verbosity quiet >nul 2>&1
-if %ERRORLEVEL% neq 0 (
-    echo ❌ PUBLISH FAILED!
-    echo.
-    echo   Running detailed publish to show errors:
-    echo.
-    dotnet publish -c Release -o bin\Release\net9.0\publish
-    echo.
-    echo Exiting in 15 seconds...
-    timeout /t 15 >nul
-    exit /b 1
-)
-
-echo   Copying to IIS...
-xcopy "bin\Release\net9.0\publish\*" "C:\inetpub\wwwroot\simple-iis-app\" /E /I /Y >nul 2>&1
-if %ERRORLEVEL% neq 0 (
-    echo ❌ FILE COPY FAILED!
-    echo   Ensure you're running as Administrator
-    echo.
-    echo Exiting in 10 seconds...
-    timeout /t 10 >nul
-    exit /b 1
-)
-echo ✅ Application deployed to IIS
+echo 🔍 STEP 9: Building application...
+echo Running: dotnet build -c Release
 echo.
+dotnet build -c Release
+if %ERRORLEVEL% neq 0 (
+    echo.
+    echo ❌ Build failed! Check the errors above.
+    echo.
+    echo Press any key to exit...
+    pause >nul
+    exit /b 1
+)
+echo.
+echo ✅ Build successful!
+echo.
+pause
 
-:: Verify deployment
-echo [9/9] Verifying deployment...
+echo 🔍 STEP 10: Publishing application...
+echo Running: dotnet publish -c Release -o bin\Release\net9.0\publish
+echo.
+dotnet publish -c Release -o bin\Release\net9.0\publish
+if %ERRORLEVEL% neq 0 (
+    echo.
+    echo ❌ Publish failed! Check the errors above.
+    echo.
+    echo Press any key to exit...
+    pause >nul
+    exit /b 1
+)
+echo.
+echo ✅ Publish successful!
+echo.
+pause
+
+echo 🔍 STEP 11: Copying files to IIS directory...
+echo Running: xcopy "bin\Release\net9.0\publish\*" "C:\inetpub\wwwroot\simple-iis-app\" /E /I /Y
+echo.
+xcopy "bin\Release\net9.0\publish\*" "C:\inetpub\wwwroot\simple-iis-app\" /E /I /Y
+if %ERRORLEVEL% neq 0 (
+    echo.
+    echo ❌ Copy failed! Check permissions and try running as Administrator.
+    echo.
+    echo Press any key to exit...
+    pause >nul
+    exit /b 1
+)
+echo.
+echo ✅ Files copied successfully!
+echo.
+pause
+
+echo 🔍 STEP 12: Verifying deployment...
 if exist "C:\inetpub\wwwroot\simple-iis-app\simple-iis-app.dll" (
-    echo ✅ Application files verified
+    echo ✅ Application DLL found
 ) else (
-    echo ❌ Deployment verification failed
-    echo   Files may not have copied correctly
+    echo ❌ Application DLL not found - deployment may have failed
 )
 
 if exist "C:\inetpub\wwwroot\simple-iis-app\web.config" (
@@ -226,12 +254,17 @@ if exist "C:\inetpub\wwwroot\simple-iis-app\web.config" (
 )
 
 echo.
-echo ================================
-echo 🎉 DEPLOYMENT SUCCESSFUL! 🎉  
-echo ================================
+echo Files in IIS directory:
+dir "C:\inetpub\wwwroot\simple-iis-app" /B
 echo.
-echo ✅ Application built and deployed
-echo ✅ Files location: C:\inetpub\wwwroot\simple-iis-app\
+pause
+
+echo ========================================
+echo 🎉 DEPLOYMENT COMPLETED! 🎉
+echo ========================================
+echo.
+echo ✅ Application built successfully
+echo ✅ Files deployed to: C:\inetpub\wwwroot\simple-iis-app\
 echo ✅ Ready for IIS configuration
 echo.
 echo 📋 NEXT STEPS - Configure IIS:
@@ -245,7 +278,7 @@ echo    • .NET CLR Version: No Managed Code
 echo    • Click OK
 echo.
 echo 3. Create Website:
-echo    • Right-click "Sites" → Add Website
+echo    • Right-click "Sites" → Add Website  
 echo    • Site name: simple-iis-app
 echo    • Physical path: C:\inetpub\wwwroot\simple-iis-app
 echo    • Port: 8080
@@ -256,13 +289,6 @@ echo 4. Test your deployment:
 echo    • Open browser to: http://localhost:8080
 echo    • You should see the Simple IIS App homepage
 echo.
-echo 🔧 If you see errors, check:
-echo    • Windows Event Viewer → Windows Logs → Application
-echo    • IIS logs in: C:\inetpub\logs\LogFiles\
-echo.
 echo ================================
-echo Deployment completed at %date% %time%
-echo ================================
-echo.
 echo Press any key to exit...
 pause >nul
