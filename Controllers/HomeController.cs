@@ -166,7 +166,7 @@ namespace simple_iis_app.Controllers
                 switch (errorType.ToLower())
                 {
                     case "nullreference":
-                        _logger.LogError("🔥 STACK TRACE TEST: Triggering NullReferenceException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
+                        _logger.LogError("🔥 STACK TRACE TEST: Triggering NullReferenceException for Datadog testing - User: {User}, Git: {GitSha}", user, gitBranch);
                         Console.WriteLine("🔍 DEBUG: About to trigger NullReferenceException");
                         string nullString = null;
                         Console.WriteLine("🔍 DEBUG: nullString is null, about to access .Length");
@@ -175,31 +175,31 @@ namespace simple_iis_app.Controllers
                         throw new InvalidOperationException("This should never be reached");
 
                     case "argumentnull":
-                        _logger.LogError("🔥 STACK TRACE TEST: Triggering ArgumentNullException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
-                        throw new ArgumentNullException("testParameter", $"DATADOG TEST: ArgumentNullException triggered by {user} at {timestamp} (Git SHA: {gitSha}) from IP: {clientIp}");
+                        _logger.LogError("🔥 STACK TRACE TEST: Triggering ArgumentNullException for Datadog testing - User: {User}, Git: {GitSha}", user, gitBranch);
+                        throw new ArgumentNullException("testParameter", $"DATADOG TEST: ArgumentNullException triggered by {user} at {timestamp} (Git Branch: {gitBranch}) from IP: {clientIp}");
 
                     case "invalidoperation":
-                        _logger.LogError("🔥 STACK TRACE TEST: Triggering InvalidOperationException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
+                        _logger.LogError("🔥 STACK TRACE TEST: Triggering InvalidOperationException for Datadog testing - User: {User}, Git: {GitSha}", user, gitBranch);
                         var emptyList = new List<string>();
                         var first = emptyList.First(); // This will throw InvalidOperationException
                         throw new InvalidOperationException("This should never be reached");
 
                     case "dividebyzero":
-                        _logger.LogError("🔥 STACK TRACE TEST: Triggering DivideByZeroException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
+                        _logger.LogError("🔥 STACK TRACE TEST: Triggering DivideByZeroException for Datadog testing - User: {User}, Git: {GitSha}", user, gitBranch);
                         int zero = 0;
                         int result = 10 / zero; // This will throw DivideByZeroException
                         throw new InvalidOperationException("This should never be reached");
 
                     case "outofrange":
-                        _logger.LogError("🔥 STACK TRACE TEST: Triggering IndexOutOfRangeException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
+                        _logger.LogError("🔥 STACK TRACE TEST: Triggering IndexOutOfRangeException for Datadog testing - User: {User}, Git: {GitSha}", user, gitBranch);
                         var array = new int[] { 1, 2, 3 };
                         int value = array[10]; // This will throw IndexOutOfRangeException
                         throw new InvalidOperationException("This should never be reached");
 
                     case "custom":
-                        _logger.LogError("🔥 STACK TRACE TEST: Triggering custom exception for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
-                        var customEx = new ApplicationException($"DATADOG MONITORING TEST: Custom exception triggered by {user} at {timestamp} (Git SHA: {gitSha}) from IP: {clientIp} with UserAgent: {userAgent}");
-                        customEx.Data.Add("GitCommitSha", gitSha);
+                        _logger.LogError("🔥 STACK TRACE TEST: Triggering custom exception for Datadog testing - User: {User}, Git: {GitSha}", user, gitBranch);
+                        var customEx = new ApplicationException($"DATADOG MONITORING TEST: Custom exception triggered by {user} at {timestamp} (Git Branch: {gitBranch}) from IP: {clientIp} with UserAgent: {userAgent}");
+                        customEx.Data.Add("GitBranch", gitBranch);
                         customEx.Data.Add("TriggeringUser", user);
                         customEx.Data.Add("ClientIP", clientIp);
                         customEx.Data.Add("Timestamp", timestamp.ToString("O"));
@@ -207,22 +207,22 @@ namespace simple_iis_app.Controllers
                         throw customEx;
 
                     case "timeout":
-                        _logger.LogError("🔥 STACK TRACE TEST: Triggering TimeoutException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
-                        var timeoutEx = new TimeoutException($"DATADOG MONITORING TEST: Timeout error triggered by {user} at {timestamp} (Git SHA: {gitSha})");
-                        timeoutEx.Data.Add("GitCommitSha", gitSha);
+                        _logger.LogError("🔥 STACK TRACE TEST: Triggering TimeoutException for Datadog testing - User: {User}, Git: {GitSha}", user, gitBranch);
+                        var timeoutEx = new TimeoutException($"DATADOG MONITORING TEST: Timeout error triggered by {user} at {timestamp} (Git Branch: {gitBranch})");
+                        timeoutEx.Data.Add("GitBranch", gitBranch);
                         timeoutEx.Data.Add("TriggeringUser", user);
                         throw timeoutEx;
 
                     case "aggregate":
-                        _logger.LogError("🔥 STACK TRACE TEST: Triggering AggregateException for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
+                        _logger.LogError("🔥 STACK TRACE TEST: Triggering AggregateException for Datadog testing - User: {User}, Git: {GitSha}", user, gitBranch);
                         var innerEx1 = new InvalidOperationException("First inner exception for testing");
                         var innerEx2 = new ArgumentException("Second inner exception for testing");
                         throw new AggregateException($"DATADOG TEST: Multiple errors occurred (triggered by {user})", innerEx1, innerEx2);
 
                     default:
-                        _logger.LogError("🔥 STACK TRACE TEST: Triggering generic Exception for Datadog testing - User: {User}, Git: {GitSha}", user, gitSha);
-                        var genericEx = new Exception($"DATADOG MONITORING TEST: Generic exception triggered by {user} at {timestamp} (Git SHA: {gitSha}) from IP: {clientIp}");
-                        genericEx.Data.Add("GitCommitSha", gitSha);
+                        _logger.LogError("🔥 STACK TRACE TEST: Triggering generic Exception for Datadog testing - User: {User}, Git: {GitSha}", user, gitBranch);
+                        var genericEx = new Exception($"DATADOG MONITORING TEST: Generic exception triggered by {user} at {timestamp} (Git Branch: {gitBranch}) from IP: {clientIp}");
+                        genericEx.Data.Add("GitBranch", gitBranch);
                         genericEx.Data.Add("TriggeringUser", user);
                         genericEx.Data.Add("ClientIP", clientIp);
                         genericEx.Data.Add("Timestamp", timestamp.ToString("O"));
@@ -236,8 +236,8 @@ namespace simple_iis_app.Controllers
                 Console.WriteLine($"🔍 DEBUG: Exception caught! Type: {ex.GetType().Name}, Message: {ex.Message}");
                 
                 // Log the full exception with stack trace before re-throwing
-                _logger.LogError(ex, "🚨 DATADOG ERROR CAPTURED - Full Stack Trace: {ExceptionType} triggered by {User} with Git SHA: {GitSha}. Stack Trace: {StackTrace}", 
-                    ex.GetType().Name, user, gitSha, ex.StackTrace);
+                _logger.LogError(ex, "🚨 DATADOG ERROR CAPTURED - Full Stack Trace: {ExceptionType} triggered by {User} with Git Branch: {GitBranch}. Stack Trace: {StackTrace}", 
+                    ex.GetType().Name, user, gitBranch, ex.StackTrace);
                 
                 // Add explicit Datadog span attributes for error tracking
                 // These ensure Datadog's error.stack, error.message, and error.type span attributes are set
