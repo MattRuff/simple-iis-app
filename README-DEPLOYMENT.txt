@@ -1,4 +1,4 @@
-🚀 SIMPLE IIS APP - ONE-CLICK DEPLOYMENT
+🚀 SIMPLE IIS APP - DEPLOYMENT GUIDE
 
 📦 FOR CLEAN WINDOWS ENVIRONMENTS
 
@@ -9,10 +9,10 @@ HOW TO DEPLOY:
 1. Download ZIP from GitHub
 2. Extract completely  
 3. Right-click "DEPLOY.bat" → "Run as administrator"
-4. Follow the IIS setup instructions shown
+4. ** MANUALLY SET UP IIS (see detailed steps below) **
 5. Browse to http://localhost:8080
 
-That's it! ✅
+** IIS SETUP IS MANUAL - DEPLOYMENT SCRIPT ONLY BUILDS THE APP **
 
 ===========================================
 REQUIREMENTS:
@@ -27,15 +27,10 @@ REQUIREMENTS:
 WHAT THE SCRIPT DOES:
 ===========================================
 
-[1/9] ✅ Check administrator privileges
-[2/9] ✅ Verify project structure
-[3/9] ✅ Auto-fix GitHub namespace issues
-[4/9] ✅ Check .NET 9.0 SDK installation
-[5/9] ✅ Verify IIS installation
-[6/9] ✅ Set deployment environment variables
-[7/9] ✅ Prepare build environment
-[8/9] ✅ Build, publish, and deploy to IIS
-[9/9] ✅ Verify deployment success
+[1-12] ✅ Build and deploy application files to C:\inetpub\wwwroot\simple-iis-app\
+[13-18] ⚠️ Attempts IIS configuration (may fail - use manual steps below)
+
+** MANUAL IIS SETUP REQUIRED **
 
 ===========================================
 DOWNLOAD LINKS:
@@ -60,6 +55,53 @@ FEATURES INCLUDED:
 📝 Structured logging
 
 ===========================================
+📋 MANUAL IIS SETUP (REQUIRED):
+===========================================
+
+After running DEPLOY.bat, you MUST manually configure IIS:
+
+🔧 STEP 1: Open IIS Manager
+   • Press Windows key + R
+   • Type: inetmgr
+   • Press Enter (or search "IIS" in Start menu)
+
+🔧 STEP 2: Create Application Pool
+   • In IIS Manager, expand your server name
+   • Right-click "Application Pools" → "Add Application Pool"
+   • Name: simple-iis-app
+   • .NET CLR Version: "No Managed Code"
+   • Managed Pipeline Mode: Integrated
+   • Click "OK"
+
+🔧 STEP 3: Create Website
+   • Right-click "Sites" → "Add Website"
+   • Site name: simple-iis-app
+   • Application pool: simple-iis-app (select from dropdown)
+   • Physical path: C:\inetpub\wwwroot\simple-iis-app
+   • Binding Type: http
+   • IP Address: All Unassigned
+   • Port: 8080
+   • Host name: (leave blank)
+   • Click "OK"
+
+🔧 STEP 4: Set Directory Permissions (if needed)
+   • In Windows Explorer, navigate to: C:\inetpub\wwwroot\simple-iis-app
+   • Right-click → Properties → Security → Edit → Add
+   • Type: IIS AppPool\simple-iis-app
+   • Check "Read & Execute" and "Read"
+   • Click OK
+
+🔧 STEP 5: Start the Website
+   • In IIS Manager, click on "simple-iis-app" website
+   • In Actions panel, click "Start" (if not already started)
+   • Ensure Application Pool is also started
+
+🔧 STEP 6: Test Your Deployment
+   • Open browser
+   • Navigate to: http://localhost:8080
+   • You should see the Simple IIS App homepage
+
+===========================================
 TROUBLESHOOTING:
 ===========================================
 
@@ -68,12 +110,23 @@ TROUBLESHOOTING:
    → Check that all files extracted properly
 
 ❌ Permission Errors:
-   → Must run as Administrator
+   → Must run DEPLOY.bat as Administrator
    → Check IIS is installed properly
 
-❌ IIS Errors:
+❌ IIS Errors (500.19, 500.30):
    → Install ASP.NET Core Module V2
-   → Set Application Pool to "No Managed Code"
-   → Check Windows Event Viewer
+   → Ensure Application Pool is "No Managed Code"
+   → Check directory permissions (Step 4 above)
+   → Check Windows Event Viewer → Application logs
+
+❌ Website Won't Start:
+   → Check port 8080 isn't used by another application
+   → Verify physical path exists: C:\inetpub\wwwroot\simple-iis-app
+   → Ensure application pool is started
+
+❌ 404 Errors:
+   → Verify website binding is set to port 8080
+   → Check physical path points to correct directory
+   → Ensure simple-iis-app.dll exists in the directory
 
 ===========================================

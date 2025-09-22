@@ -3,15 +3,23 @@
 1. RIGHT-CLICK on "DEPLOY.bat"
 2. SELECT "Run as administrator"  
 3. WAIT for it to complete
-4. FOLLOW the IIS setup instructions shown
+4. ** MANUALLY SET UP IIS (see README-DEPLOYMENT.txt) **
+5. BROWSE to http://localhost:8080
 
-That's it! ✅
+⚠️ IMPORTANT: IIS SETUP IS MANUAL!
 
-The script automatically:
+The script only:
 - Fixes any GitHub download issues
 - Builds the application
-- Deploys to C:\inetpub\wwwroot\simple-iis-app\
-- Shows you the next steps for IIS setup
+- Deploys files to C:\inetpub\wwwroot\simple-iis-app\
+
+YOU MUST MANUALLY:
+- Create IIS Application Pool "simple-iis-app"  
+- Create IIS Website "simple-iis-app" on port 8080
+- Set physical path to C:\inetpub\wwwroot\simple-iis-app
+- Set application pool to "No Managed Code"
+
+📋 DETAILED STEPS: See README-DEPLOYMENT.txt
 
 🔧 Requirements:
 - .NET 9.0 SDK installed
@@ -19,5 +27,5 @@ The script automatically:
 - Run as Administrator
 
 📁 Files deployed to: C:\inetpub\wwwroot\simple-iis-app\
-🌐 Website URL: http://localhost:8080 (after IIS setup)
+🌐 Website URL: http://localhost:8080 (after manual IIS setup)
 
