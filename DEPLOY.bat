@@ -259,36 +259,78 @@ dir "C:\inetpub\wwwroot\simple-iis-app" /B
 echo.
 pause
 
+echo 🔍 STEP 13: Creating IIS Application Pool...
+echo Running: powershell IIS commands to create application pool
+echo.
+powershell -Command "Import-Module WebAdministration -ErrorAction SilentlyContinue; try { $pool = Get-WebAppPool -Name 'simple-iis-app' -ErrorAction SilentlyContinue; if ($pool) { Write-Host '   ⚠️ Application pool simple-iis-app already exists - removing it'; Remove-WebAppPool -Name 'simple-iis-app' -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2 } Write-Host '   🔧 Creating new application pool: simple-iis-app'; New-WebAppPool -Name 'simple-iis-app'; Set-ItemProperty -Path 'IIS:\AppPools\simple-iis-app' -Name managedRuntimeVersion -Value ''; Set-ItemProperty -Path 'IIS:\AppPools\simple-iis-app' -Name processModel.identityType -Value ApplicationPoolIdentity; Write-Host '   ✅ Application pool created successfully' } catch { Write-Host '   ❌ Failed to create application pool:' $_.Exception.Message }"
+if %ERRORLEVEL% neq 0 (
+    echo.
+    echo ❌ Application pool creation failed!
+    echo You may need to create it manually in IIS Manager.
+    echo.
+) else (
+    echo ✅ Application pool 'simple-iis-app' created
+)
+echo.
+pause
+
+echo 🔍 STEP 14: Creating IIS Website on port 8080...
+echo Running: powershell IIS commands to create website
+echo.
+powershell -Command "Import-Module WebAdministration -ErrorAction SilentlyContinue; try { $site = Get-Website -Name 'simple-iis-app' -ErrorAction SilentlyContinue; if ($site) { Write-Host '   ⚠️ Website simple-iis-app already exists - removing it'; Remove-Website -Name 'simple-iis-app' -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2 } Write-Host '   🔧 Creating new website: simple-iis-app on port 8080'; New-Website -Name 'simple-iis-app' -PhysicalPath 'C:\inetpub\wwwroot\simple-iis-app' -Port 8080 -ApplicationPool 'simple-iis-app'; Write-Host '   ✅ Website created successfully' } catch { Write-Host '   ❌ Failed to create website:' $_.Exception.Message }"
+if %ERRORLEVEL% neq 0 (
+    echo.
+    echo ❌ Website creation failed!
+    echo You may need to create it manually in IIS Manager.
+    echo.
+) else (
+    echo ✅ Website 'simple-iis-app' created on port 8080
+)
+echo.
+pause
+
+echo 🔍 STEP 15: Starting Application Pool and Website...
+echo Ensuring application pool and website are started...
+echo.
+powershell -Command "Import-Module WebAdministration -ErrorAction SilentlyContinue; try { Write-Host '   🔧 Starting application pool...'; Start-WebAppPool -Name 'simple-iis-app' -ErrorAction SilentlyContinue; Write-Host '   🔧 Starting website...'; Start-Website -Name 'simple-iis-app' -ErrorAction SilentlyContinue; Write-Host '   ✅ Application pool and website started' } catch { Write-Host '   ⚠️ Error starting services:' $_.Exception.Message }"
+echo.
+pause
+
+echo 🔍 STEP 16: Final verification...
+echo Checking IIS configuration...
+echo.
+powershell -Command "Import-Module WebAdministration -ErrorAction SilentlyContinue; try { $pool = Get-WebAppPool -Name 'simple-iis-app' -ErrorAction SilentlyContinue; $site = Get-Website -Name 'simple-iis-app' -ErrorAction SilentlyContinue; if ($pool) { Write-Host '   ✅ Application Pool: simple-iis-app (' $pool.state ')' } else { Write-Host '   ❌ Application Pool: Not found' } if ($site) { Write-Host '   ✅ Website: simple-iis-app (' $site.state ') on port' $site.bindings.Collection[0].bindingInformation } else { Write-Host '   ❌ Website: Not found' } } catch { Write-Host '   ⚠️ Could not verify IIS configuration' }"
+echo.
+pause
+
 echo ========================================
 echo 🎉 DEPLOYMENT COMPLETED! 🎉
 echo ========================================
 echo.
-echo ✅ Application built successfully
-echo ✅ Files deployed to: C:\inetpub\wwwroot\simple-iis-app\
-echo ✅ Ready for IIS configuration
+echo ✅ Application built and deployed
+echo ✅ Files location: C:\inetpub\wwwroot\simple-iis-app\
+echo ✅ IIS Application Pool: simple-iis-app (No Managed Code)
+echo ✅ IIS Website: simple-iis-app on port 8080
 echo.
-echo 📋 NEXT STEPS - Configure IIS:
+echo 🌐 TEST YOUR DEPLOYMENT:
 echo.
-echo 1. Open IIS Manager (search "IIS" in Start menu)
+echo   Open your browser and navigate to:
+echo   http://localhost:8080
 echo.
-echo 2. Create Application Pool:
-echo    • Right-click "Application Pools" → Add Application Pool
-echo    • Name: simple-iis-app
-echo    • .NET CLR Version: No Managed Code
-echo    • Click OK
+echo   You should see the Simple IIS App homepage with:
+echo   • Login functionality (admin/password)
+echo   • Health check status
+echo   • Error testing buttons
+echo   • Deployment information
 echo.
-echo 3. Create Website:
-echo    • Right-click "Sites" → Add Website  
-echo    • Site name: simple-iis-app
-echo    • Physical path: C:\inetpub\wwwroot\simple-iis-app
-echo    • Port: 8080
-echo    • Application pool: simple-iis-app
-echo    • Click OK
-echo.
-echo 4. Test your deployment:
-echo    • Open browser to: http://localhost:8080
-echo    • You should see the Simple IIS App homepage
+echo 🔧 If you see errors:
+echo   • Check Windows Event Viewer → Application logs
+echo   • Check IIS logs in C:\inetpub\logs\LogFiles\
+echo   • Verify .NET 9.0 Hosting Bundle is installed
 echo.
 echo ================================
+echo Deployment completed at %date% %time%
+echo ================================
+echo.
 echo Press any key to exit...
 pause >nul
