@@ -47,8 +47,8 @@ if not exist "simple-iis-app.csproj" (
 echo.
 pause
 
-echo 🔍 STEP 3: Auto-fixing GitHub download namespace issues...
-echo Checking for namespace issues that cause build errors...
+echo 🔍 STEP 3: Auto-fixing GitHub download namespace and package issues...
+echo Checking for namespace issues and package version problems that cause build errors...
 echo.
 
 :: Fix Views\_ViewImports.cshtml
@@ -89,8 +89,20 @@ if exist "Properties\launchSettings.json" (
     )
 )
 
+:: Fix SourceLink package version issue (common in GitHub downloads)
+if exist "simple-iis-app.csproj" (
+    findstr /C:"Microsoft.SourceLink.GitHub.*8.0.0" "simple-iis-app.csproj" >nul 2>&1
+    if !errorlevel! equ 0 (
+        echo   🔧 Fixing SourceLink package version (8.0.0 doesn't exist)...
+        powershell -Command "(Get-Content 'simple-iis-app.csproj') -replace 'Microsoft.SourceLink.GitHub.*Version=\"8.0.0\"', 'Microsoft.SourceLink.GitHub\" Version=\"1.1.1\"' | Set-Content 'simple-iis-app.csproj'" 2>nul
+        echo   ✅ Fixed SourceLink package version to 1.1.1
+    ) else (
+        echo   ✅ SourceLink package version already correct
+    )
+)
+
 echo.
-echo ✅ Namespace fixes completed (if any were needed)
+echo ✅ Namespace and package fixes completed (if any were needed)
 echo.
 pause
 
