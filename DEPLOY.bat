@@ -94,7 +94,7 @@ if exist "simple-iis-app.csproj" (
     findstr /C:"8.0.0" "simple-iis-app.csproj" >nul 2>&1
     if !errorlevel! equ 0 (
         echo   🔧 Fixing SourceLink package version (8.0.0 doesn't exist)...
-        powershell -Command "$content = Get-Content 'simple-iis-app.csproj'; $content = $content -replace '8\.0\.0', '1.1.1'; Set-Content 'simple-iis-app.csproj' $content" 2>nul
+        powershell -Command "$file='simple-iis-app.csproj'; $text=Get-Content $file; $text=$text -replace '8\.0\.0','1.1.1'; Set-Content $file $text" 2>nul
         echo   ✅ Fixed SourceLink package version to 1.1.1
     ) else (
         echo   ✅ SourceLink package version already correct
