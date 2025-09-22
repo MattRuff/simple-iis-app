@@ -259,20 +259,22 @@ dir "C:\inetpub\wwwroot\simple-iis-app" /B
 echo.
 pause
 
-echo 🔍 STEP 13: Checking IIS Management Tools...
-echo Verifying WebAdministration module is available...
+echo 🔍 STEP 13: Checking IIS Command Line Tool...
+echo Verifying appcmd.exe is available...
 echo.
-powershell -Command "try { Import-Module WebAdministration -ErrorAction Stop; Write-Host '   ✅ WebAdministration module loaded successfully' } catch { Write-Host '   ❌ WebAdministration module not available'; Write-Host '   Please install IIS Management Tools:'; Write-Host '   1. Open Server Manager or Control Panel'; Write-Host '   2. Add Windows Features'; Write-Host '   3. Enable: Web Server (IIS) → Management Tools → IIS Management Console'; Write-Host '   4. Enable: Web Server (IIS) → Management Tools → IIS Management Scripts and Tools'; exit 1 }"
-if %ERRORLEVEL% neq 0 (
+echo 🐛 DEBUG: Checking path: %WINDIR%\System32\inetsrv\appcmd.exe
+if exist "%WINDIR%\System32\inetsrv\appcmd.exe" (
+    echo ✅ appcmd.exe found - IIS command line tool available
+    echo 🐛 DEBUG: Testing appcmd.exe basic functionality...
+    "%WINDIR%\System32\inetsrv\appcmd.exe" list sites
+    echo 🐛 DEBUG: appcmd.exe test completed (exit code: %ERRORLEVEL%)
+) else (
+    echo ❌ appcmd.exe not found! IIS may not be properly installed.
+    echo 🐛 DEBUG: Checked path: %WINDIR%\System32\inetsrv\appcmd.exe
+    echo 🐛 DEBUG: Directory contents:
+    dir "%WINDIR%\System32\inetsrv\" /B 2>nul
     echo.
-    echo ❌ IIS Management Tools not properly installed!
-    echo.
-    echo You can still test your website manually:
-    echo 1. Open IIS Manager
-    echo 2. Create Application Pool: simple-iis-app (No Managed Code)
-    echo 3. Create Website: simple-iis-app on port 8080
-    echo 4. Browse to http://localhost:8080
-    echo.
+    echo Please ensure IIS is installed with Management Tools.
     pause
     goto :MANUAL_SETUP
 )
@@ -280,28 +282,123 @@ echo.
 pause
 
 echo 🔍 STEP 14: Creating IIS Application Pool...
-echo Running: New-WebAppPool -Name 'simple-iis-app'
+echo Running: appcmd add apppool /name:"simple-iis-app"
 echo.
-powershell -Command "Import-Module WebAdministration; try { $existing = Get-WebAppPool -Name 'simple-iis-app' -ErrorAction SilentlyContinue; if ($existing) { Write-Host '   ⚠️ Removing existing application pool'; Remove-WebAppPool -Name 'simple-iis-app' -Confirm:$false; Start-Sleep 3 } Write-Host '   🔧 Creating application pool: simple-iis-app'; New-WebAppPool -Name 'simple-iis-app'; Write-Host '   🔧 Setting .NET CLR Version to No Managed Code'; Set-ItemProperty IIS:\AppPools\simple-iis-app managedRuntimeVersion ''; Write-Host '   ✅ Application pool created and configured' } catch { Write-Host '   ❌ Error:' $_.Exception.Message; exit 1 }"
-if %ERRORLEVEL% neq 0 (
-    echo.
-    echo ❌ Application pool creation failed!
+
+echo 🐛 DEBUG: Listing existing application pools before creation...
+"%WINDIR%\System32\inetsrv\appcmd.exe" list apppool
+
+echo.
+echo 🐛 DEBUG: Checking if simple-iis-app application pool already exists...
+"%WINDIR%\System32\inetsrv\appcmd.exe" list apppool "simple-iis-app" >nul 2>&1
+set CHECK_RESULT=%ERRORLEVEL%
+echo 🐛 DEBUG: Check result: %CHECK_RESULT% (0=exists, 1=does not exist)
+
+if %CHECK_RESULT% equ 0 (
+    echo   ⚠️ Removing existing application pool...
+    echo 🐛 DEBUG: Running: appcmd delete apppool "simple-iis-app"
+    "%WINDIR%\System32\inetsrv\appcmd.exe" delete apppool "simple-iis-app"
+    set DELETE_RESULT=%ERRORLEVEL%
+    echo 🐛 DEBUG: Delete result: %DELETE_RESULT%
+    timeout /t 2 >nul
+)
+
+echo   🔧 Creating application pool: simple-iis-app
+echo 🐛 DEBUG: Running: appcmd add apppool /name:"simple-iis-app"
+"%WINDIR%\System32\inetsrv\appcmd.exe" add apppool /name:"simple-iis-app"
+set CREATE_RESULT=%ERRORLEVEL%
+echo 🐛 DEBUG: Create result: %CREATE_RESULT%
+
+if %CREATE_RESULT% neq 0 (
+    echo   ❌ Failed to create application pool! Error code: %CREATE_RESULT%
+    echo 🐛 DEBUG: Listing all application pools after failed creation:
+    "%WINDIR%\System32\inetsrv\appcmd.exe" list apppool
     pause
     goto :MANUAL_SETUP
 )
+
+echo   🔧 Setting .NET CLR Version to No Managed Code
+echo 🐛 DEBUG: Running: appcmd set apppool "simple-iis-app" /managedRuntimeVersion:""
+"%WINDIR%\System32\inetsrv\appcmd.exe" set apppool "simple-iis-app" /managedRuntimeVersion:""
+set RUNTIME_RESULT=%ERRORLEVEL%
+echo 🐛 DEBUG: Runtime set result: %RUNTIME_RESULT%
+
+if %RUNTIME_RESULT% neq 0 (
+    echo   ⚠️ Could not set runtime version - may need manual configuration (Error: %RUNTIME_RESULT%)
+) else (
+    echo   ✅ Runtime version set to No Managed Code
+)
+
+echo 🐛 DEBUG: Verifying application pool creation:
+"%WINDIR%\System32\inetsrv\appcmd.exe" list apppool "simple-iis-app"
+
+echo   ✅ Application pool created successfully
 echo.
 pause
 
 echo 🔍 STEP 15: Creating IIS Website on port 8080...
-echo Running: New-Website -Name 'simple-iis-app' -Port 8080
+echo Running: appcmd add site /name:"simple-iis-app"
 echo.
-powershell -Command "Import-Module WebAdministration; try { $existing = Get-Website -Name 'simple-iis-app' -ErrorAction SilentlyContinue; if ($existing) { Write-Host '   ⚠️ Removing existing website'; Remove-Website -Name 'simple-iis-app' -Confirm:$false; Start-Sleep 3 } Write-Host '   🔧 Creating website: simple-iis-app'; $site = New-Website -Name 'simple-iis-app' -PhysicalPath 'C:\inetpub\wwwroot\simple-iis-app' -Port 8080 -ApplicationPool 'simple-iis-app'; Write-Host '   ✅ Website created:' $site.name 'on port' $site.bindings.Collection[0].bindingInformation } catch { Write-Host '   ❌ Error:' $_.Exception.Message; exit 1 }"
-if %ERRORLEVEL% neq 0 (
-    echo.
-    echo ❌ Website creation failed!
+
+echo 🐛 DEBUG: Listing existing websites before creation...
+"%WINDIR%\System32\inetsrv\appcmd.exe" list site
+
+echo.
+echo 🐛 DEBUG: Checking if simple-iis-app website already exists...
+"%WINDIR%\System32\inetsrv\appcmd.exe" list site "simple-iis-app" >nul 2>&1
+set SITE_CHECK_RESULT=%ERRORLEVEL%
+echo 🐛 DEBUG: Site check result: %SITE_CHECK_RESULT% (0=exists, 1=does not exist)
+
+if %SITE_CHECK_RESULT% equ 0 (
+    echo   ⚠️ Removing existing website...
+    echo 🐛 DEBUG: Running: appcmd delete site "simple-iis-app"
+    "%WINDIR%\System32\inetsrv\appcmd.exe" delete site "simple-iis-app"
+    set SITE_DELETE_RESULT=%ERRORLEVEL%
+    echo 🐛 DEBUG: Site delete result: %SITE_DELETE_RESULT%
+    timeout /t 2 >nul
+)
+
+echo 🐛 DEBUG: Verifying physical path exists: C:\inetpub\wwwroot\simple-iis-app
+if exist "C:\inetpub\wwwroot\simple-iis-app" (
+    echo 🐛 DEBUG: ✅ Physical path exists
+    echo 🐛 DEBUG: Directory contents:
+    dir "C:\inetpub\wwwroot\simple-iis-app" /B | head -10
+) else (
+    echo 🐛 DEBUG: ❌ Physical path does not exist!
+)
+
+echo   🔧 Creating website: simple-iis-app on port 8080
+echo 🐛 DEBUG: Full command: appcmd add site /name:"simple-iis-app" /physicalPath:"C:\inetpub\wwwroot\simple-iis-app" /bindings:http/*:8080:
+"%WINDIR%\System32\inetsrv\appcmd.exe" add site /name:"simple-iis-app" /physicalPath:"C:\inetpub\wwwroot\simple-iis-app" /bindings:http/*:8080:
+set SITE_CREATE_RESULT=%ERRORLEVEL%
+echo 🐛 DEBUG: Site create result: %SITE_CREATE_RESULT%
+
+if %SITE_CREATE_RESULT% neq 0 (
+    echo   ❌ Failed to create website! Error code: %SITE_CREATE_RESULT%
+    echo 🐛 DEBUG: Listing all sites after failed creation:
+    "%WINDIR%\System32\inetsrv\appcmd.exe" list site
+    echo 🐛 DEBUG: Checking port 8080 usage:
+    netstat -an | findstr ":8080"
     pause
     goto :MANUAL_SETUP
 )
+
+echo   🔧 Assigning application pool to website
+echo 🐛 DEBUG: Running: appcmd set app "simple-iis-app/" /applicationPool:"simple-iis-app"
+"%WINDIR%\System32\inetsrv\appcmd.exe" set app "simple-iis-app/" /applicationPool:"simple-iis-app"
+set POOL_ASSIGN_RESULT=%ERRORLEVEL%
+echo 🐛 DEBUG: Pool assign result: %POOL_ASSIGN_RESULT%
+
+if %POOL_ASSIGN_RESULT% neq 0 (
+    echo   ⚠️ Could not assign application pool - may need manual configuration (Error: %POOL_ASSIGN_RESULT%)
+) else (
+    echo   ✅ Application pool assigned successfully
+)
+
+echo 🐛 DEBUG: Verifying website creation:
+"%WINDIR%\System32\inetsrv\appcmd.exe" list site "simple-iis-app"
+
+echo   ✅ Website created successfully
 echo.
 pause
 
@@ -328,14 +425,106 @@ pause
 echo 🔍 STEP 17: Starting Services...
 echo Starting application pool and website...
 echo.
-powershell -Command "Import-Module WebAdministration; try { Write-Host '   🔧 Starting application pool...'; Start-WebAppPool -Name 'simple-iis-app'; Write-Host '   🔧 Starting website...'; Start-Website -Name 'simple-iis-app'; Start-Sleep 2; $pool = Get-WebAppPool -Name 'simple-iis-app'; $site = Get-Website -Name 'simple-iis-app'; Write-Host '   ✅ Application Pool:' $pool.name '(' $pool.state ')'; Write-Host '   ✅ Website:' $site.name '(' $site.state ')' } catch { Write-Host '   ⚠️ Warning:' $_.Exception.Message }"
+
+echo 🐛 DEBUG: Checking current status before starting...
+echo 🐛 DEBUG: Application pool status:
+"%WINDIR%\System32\inetsrv\appcmd.exe" list apppool "simple-iis-app"
+echo 🐛 DEBUG: Website status:
+"%WINDIR%\System32\inetsrv\appcmd.exe" list site "simple-iis-app"
+
+echo   🔧 Starting application pool...
+echo 🐛 DEBUG: Running: appcmd start apppool "simple-iis-app"
+"%WINDIR%\System32\inetsrv\appcmd.exe" start apppool "simple-iis-app"
+set POOL_START_RESULT=%ERRORLEVEL%
+echo 🐛 DEBUG: Pool start result: %POOL_START_RESULT%
+
+if %POOL_START_RESULT% neq 0 (
+    echo   ⚠️ Could not start application pool (Error: %POOL_START_RESULT% - may already be running)
+) else (
+    echo   ✅ Application pool started
+)
+
+echo   🔧 Starting website...
+echo 🐛 DEBUG: Running: appcmd start site "simple-iis-app"
+"%WINDIR%\System32\inetsrv\appcmd.exe" start site "simple-iis-app"
+set SITE_START_RESULT=%ERRORLEVEL%
+echo 🐛 DEBUG: Site start result: %SITE_START_RESULT%
+
+if %SITE_START_RESULT% neq 0 (
+    echo   ⚠️ Could not start website (Error: %SITE_START_RESULT% - may already be running)
+) else (
+    echo   ✅ Website started
+)
+
+echo 🐛 DEBUG: Checking status after starting...
+echo 🐛 DEBUG: Application pool status:
+"%WINDIR%\System32\inetsrv\appcmd.exe" list apppool "simple-iis-app"
+echo 🐛 DEBUG: Website status:
+"%WINDIR%\System32\inetsrv\appcmd.exe" list site "simple-iis-app"
 echo.
 pause
 
 echo 🔍 STEP 18: Final verification...
 echo Checking final IIS configuration...
 echo.
-powershell -Command "Import-Module WebAdministration; try { $pool = Get-WebAppPool -Name 'simple-iis-app'; $site = Get-Website -Name 'simple-iis-app'; Write-Host '   ✅ Application Pool:' $pool.name '(' $pool.state ') - Runtime:' $pool.managedRuntimeVersion; Write-Host '   ✅ Website:' $site.name '(' $site.state ') - Port:' $site.bindings.Collection[0].bindingInformation; Write-Host '   ✅ Physical Path:' $site.physicalPath } catch { Write-Host '   ⚠️ Could not verify configuration:' $_.Exception.Message }"
+
+echo 🐛 DEBUG: Complete IIS configuration verification...
+echo.
+echo   📋 Listing created application pool:
+"%WINDIR%\System32\inetsrv\appcmd.exe" list apppool "simple-iis-app"
+set FINAL_POOL_CHECK=%ERRORLEVEL%
+echo 🐛 DEBUG: Application pool list result: %FINAL_POOL_CHECK%
+
+echo.
+echo   📋 Listing created website:
+"%WINDIR%\System32\inetsrv\appcmd.exe" list site "simple-iis-app"
+set FINAL_SITE_CHECK=%ERRORLEVEL%
+echo 🐛 DEBUG: Website list result: %FINAL_SITE_CHECK%
+
+echo.
+echo 🐛 DEBUG: Checking all active ports:
+netstat -an | findstr "LISTENING" | findstr "80"
+echo.
+echo   📋 Checking if port 8080 is in use:
+netstat -an | findstr ":8080 "
+set PORT_CHECK=%ERRORLEVEL%
+echo 🐛 DEBUG: Port 8080 check result: %PORT_CHECK% (0=found, 1=not found)
+
+if %PORT_CHECK% equ 0 (
+    echo   ✅ Port 8080 is active and listening
+) else (
+    echo   ⚠️ Port 8080 not showing as active - website may not be running
+    echo 🐛 DEBUG: All listening ports:
+    netstat -an | findstr "LISTENING"
+)
+
+echo.
+echo 🐛 DEBUG: Testing HTTP connection to localhost:8080...
+echo 🐛 DEBUG: Running: curl -I http://localhost:8080 (if available)
+curl -I http://localhost:8080 2>nul
+set CURL_RESULT=%ERRORLEVEL%
+echo 🐛 DEBUG: Curl result: %CURL_RESULT%
+
+echo.
+echo 🐛 DEBUG: Final summary of what was created:
+if %FINAL_POOL_CHECK% equ 0 (
+    echo   ✅ Application Pool: simple-iis-app exists
+) else (
+    echo   ❌ Application Pool: simple-iis-app NOT found
+)
+
+if %FINAL_SITE_CHECK% equ 0 (
+    echo   ✅ Website: simple-iis-app exists
+) else (
+    echo   ❌ Website: simple-iis-app NOT found
+)
+
+if %PORT_CHECK% equ 0 (
+    echo   ✅ Port 8080: Active and listening
+) else (
+    echo   ❌ Port 8080: Not active
+)
+
 echo.
 pause
 
