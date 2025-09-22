@@ -89,17 +89,8 @@ if exist "Properties\launchSettings.json" (
     )
 )
 
-:: Fix SourceLink package version issue (common in GitHub downloads)
-if exist "simple-iis-app.csproj" (
-    findstr /C:"8.0.0" "simple-iis-app.csproj" >nul 2>&1
-    if !errorlevel! equ 0 (
-        echo   🔧 Fixing SourceLink package version (8.0.0 doesn't exist)...
-        powershell -Command "& {$f='simple-iis-app.csproj';$c=Get-Content $f;$c=$c -replace '8\.0\.0','1.1.1';Set-Content $f $c}" 2>nul
-        echo   ✅ Fixed SourceLink package version to 1.1.1
-    ) else (
-        echo   ✅ SourceLink package version already correct
-    )
-)
+:: SourceLink package should be ready
+echo   ✅ SourceLink package configured for Datadog integration
 
 echo.
 echo ✅ Namespace and package fixes completed (if any were needed)

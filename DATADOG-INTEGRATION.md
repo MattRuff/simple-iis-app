@@ -33,7 +33,7 @@ The project includes:
 
 <ItemGroup>
   <!-- Microsoft SourceLink for GitHub -->
-  <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
+  <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
 </ItemGroup>
 ```
 
@@ -112,16 +112,16 @@ If your repository is hosted elsewhere, replace the SourceLink package:
 
 ```xml
 <!-- For Bitbucket -->
-<PackageReference Include="Microsoft.SourceLink.Bitbucket.Git" Version="1.1.1" PrivateAssets="All"/>
+<PackageReference Include="Microsoft.SourceLink.Bitbucket.Git" Version="8.0.0" PrivateAssets="All"/>
 
 <!-- For GitLab -->
-<PackageReference Include="Microsoft.SourceLink.GitLab" Version="1.1.1" PrivateAssets="All"/>
+<PackageReference Include="Microsoft.SourceLink.GitLab" Version="8.0.0" PrivateAssets="All"/>
 
 <!-- For Azure DevOps -->
-<PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" Version="1.1.1" PrivateAssets="All"/>
+<PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" Version="8.0.0" PrivateAssets="All"/>
 
 <!-- For Azure DevOps Server -->
-<PackageReference Include="Microsoft.SourceLink.AzureDevOpsServer.Git" Version="1.1.1" PrivateAssets="All"/>
+<PackageReference Include="Microsoft.SourceLink.AzureDevOpsServer.Git" Version="8.0.0" PrivateAssets="All"/>
 ```
 
 ### **Custom Git Information**
