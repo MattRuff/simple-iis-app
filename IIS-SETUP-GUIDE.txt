@@ -1,0 +1,120 @@
+================================================================================
+🔧 IIS MANUAL SETUP GUIDE - SIMPLE IIS APP
+================================================================================
+
+⚠️  IMPORTANT: The DEPLOY.bat script ONLY builds and copies files.
+    You MUST manually configure IIS using the steps below.
+
+================================================================================
+📋 QUICK CHECKLIST:
+================================================================================
+
+□ Run DEPLOY.bat as Administrator (builds app files)
+□ Open IIS Manager (inetmgr)
+□ Create Application Pool: "simple-iis-app" (No Managed Code)
+□ Create Website: "simple-iis-app" on port 8080
+□ Set Physical Path: C:\inetpub\wwwroot\simple-iis-app
+□ Assign Application Pool to Website
+□ Start Application Pool and Website
+□ Test: http://localhost:8080
+
+================================================================================
+🔧 STEP-BY-STEP INSTRUCTIONS:
+================================================================================
+
+STEP 1: Open IIS Manager
+   └─ Press Windows + R → Type: inetmgr → Press Enter
+   └─ Or search "IIS" in Start menu
+
+STEP 2: Create Application Pool
+   └─ Expand server name in left panel
+   └─ Right-click "Application Pools" → "Add Application Pool"
+   └─ Name: simple-iis-app
+   └─ .NET CLR Version: No Managed Code ⚠️ IMPORTANT!
+   └─ Managed Pipeline Mode: Integrated
+   └─ Click "OK"
+
+STEP 3: Create Website  
+   └─ Right-click "Sites" → "Add Website"
+   └─ Site name: simple-iis-app
+   └─ Application pool: simple-iis-app (select from dropdown)
+   └─ Physical path: C:\inetpub\wwwroot\simple-iis-app
+   └─ Type: http
+   └─ IP Address: All Unassigned
+   └─ Port: 8080 ⚠️ IMPORTANT!
+   └─ Host name: (leave blank)
+   └─ Click "OK"
+
+STEP 4: Verify & Start
+   └─ In IIS Manager, click "simple-iis-app" website
+   └─ Check that Status shows "Started"
+   └─ If not started, click "Start" in Actions panel
+   └─ Also verify Application Pool is Started
+
+STEP 5: Test Deployment
+   └─ Open web browser
+   └─ Navigate to: http://localhost:8080
+   └─ You should see the Simple IIS App homepage
+
+================================================================================
+🚨 TROUBLESHOOTING:
+================================================================================
+
+Problem: 500.19 Error (Configuration Error)
+Solution: 
+   • Ensure Application Pool is set to "No Managed Code"
+   • Check that physical path exists: C:\inetpub\wwwroot\simple-iis-app
+   • Verify ASP.NET Core Module V2 is installed
+
+Problem: 500.30 Error (In-Process Start Failure)  
+Solution:
+   • Check Windows Event Viewer → Application logs
+   • Ensure simple-iis-app.dll exists in physical path
+   • Verify .NET 9.0 Hosting Bundle is installed
+
+Problem: Cannot Access Website
+Solution:
+   • Check if port 8080 is in use: netstat -an | findstr :8080
+   • Verify website binding is set to port 8080
+   • Ensure Windows Firewall allows port 8080
+
+Problem: Permission Errors
+Solution:
+   • Right-click C:\inetpub\wwwroot\simple-iis-app in Explorer
+   • Properties → Security → Edit → Add
+   • Add: IIS AppPool\simple-iis-app
+   • Give "Read & Execute" permissions
+
+================================================================================
+📁 EXPECTED FILE STRUCTURE:
+================================================================================
+
+C:\inetpub\wwwroot\simple-iis-app\
+   ├── simple-iis-app.dll ⚠️ MUST EXIST
+   ├── simple-iis-app.deps.json
+   ├── simple-iis-app.runtimeconfig.json
+   ├── web.config ⚠️ MUST EXIST
+   ├── wwwroot\
+   ├── Views\
+   └── [other application files]
+
+If these files are missing, re-run DEPLOY.bat as Administrator.
+
+================================================================================
+✅ SUCCESS INDICATORS:
+================================================================================
+
+✅ IIS Manager shows:
+   • Application Pool "simple-iis-app" - Status: Started
+   • Website "simple-iis-app" - Status: Started  
+   • Binding: *:8080: (http)
+
+✅ Browser shows:
+   • URL: http://localhost:8080 loads successfully
+   • Simple IIS App homepage with login/features
+
+✅ No errors in:
+   • Windows Event Viewer → Application logs
+   • IIS logs (if enabled)
+
+================================================================================
