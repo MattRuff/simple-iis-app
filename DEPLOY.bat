@@ -91,10 +91,10 @@ if exist "Properties\launchSettings.json" (
 
 :: Fix SourceLink package version issue (common in GitHub downloads)
 if exist "simple-iis-app.csproj" (
-    findstr /C:"Microsoft.SourceLink.GitHub.*8.0.0" "simple-iis-app.csproj" >nul 2>&1
+    findstr /C:"8.0.0" "simple-iis-app.csproj" >nul 2>&1
     if !errorlevel! equ 0 (
         echo   🔧 Fixing SourceLink package version (8.0.0 doesn't exist)...
-        powershell -Command "(Get-Content 'simple-iis-app.csproj') -replace 'Microsoft.SourceLink.GitHub.*Version=\"8.0.0\"', 'Microsoft.SourceLink.GitHub\" Version=\"1.1.1\"' | Set-Content 'simple-iis-app.csproj'" 2>nul
+        powershell -Command "$content = Get-Content 'simple-iis-app.csproj'; $content = $content -replace '8\.0\.0', '1.1.1'; Set-Content 'simple-iis-app.csproj' $content" 2>nul
         echo   ✅ Fixed SourceLink package version to 1.1.1
     ) else (
         echo   ✅ SourceLink package version already correct
