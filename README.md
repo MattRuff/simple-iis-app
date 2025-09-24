@@ -74,6 +74,8 @@ After running `DEPLOY.bat`, configure IIS manually:
 - Browse to: `http://localhost:8080`
 - Login: `admin` / `password`
 - Check endpoints: `/health`, `/api/metrics`, `/api/trigger-error`
+- Run SECURITY-TEST.bat to simulate security signals
+
 
 ## 🎯 **Key Features**
 
