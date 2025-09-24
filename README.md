@@ -96,8 +96,8 @@ A demonstration ASP.NET Core application for testing IIS deployment, authenticat
 1. **Get the Pre-Built Application:**
    - 🔗 Go to: [https://github.com/MattRuff/simple-iis-app](https://github.com/MattRuff/simple-iis-app)
    - Click **"Code"** → **"Download ZIP"**
-   - **Or** copy the pre-built folder from your development machine
-   - **Important:** The `bin\Release\net9.0\publish\` folder must be included
+   - ✅ **ZIP includes everything!** All pre-built files are now included in the repository
+   - No local building required - ready to deploy immediately
 
 2. **Deploy to Server:**
    - Extract/copy the folder to your Windows server
