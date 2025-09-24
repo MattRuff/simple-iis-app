@@ -45,7 +45,7 @@ Right-click DEPLOY.bat → "Run as administrator"
 ### **4. Install Datadog Infra, Logs, APM (Optional)**
 ```powershell
 # Set your Datadog API key (replace with your actual key)
-$env:DD_API_KEY = "your-actual-datadog-api-key-here"
+$target=[System.EnvironmentVariableTarget]::Machine; [System.Environment]::SetEnvironmentVariable('DD_API_KEY','XXXXXX',$target)
 
 # Install Datadog Agent with IIS and .NET APM instrumentation
 $p = Start-Process -Wait -PassThru msiexec -ArgumentList "/qn /i `"https://windows-agent.datadoghq.com/datadog-agent-7-latest.amd64.msi`" /log C:\Windows\SystemTemp\install-datadog.log APIKEY=`"$env:DD_API_KEY`" SITE=`"datadoghq.com`" DD_APM_INSTRUMENTATION_ENABLED=`"iis`" DD_APM_INSTRUMENTATION_LIBRARIES=`"dotnet:3`""
