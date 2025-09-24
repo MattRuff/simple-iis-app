@@ -6,6 +6,13 @@ out/
 *.exe
 *.pdb
 
+# EXCEPTION: Include pre-built deployment files and their contents
+!bin/Release/net9.0/publish/
+!bin/Release/net9.0/publish/**
+!bin/Release/net9.0/publish/*.dll
+!bin/Release/net9.0/publish/*.exe
+!bin/Release/net9.0/publish/*.pdb
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
