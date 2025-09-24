@@ -22,10 +22,14 @@ A demonstration ASP.NET Core application for testing IIS deployment, authenticat
 
 ### **2. Install Prerequisites**
 ```powershell
-# Install IIS (in Server Manager: Add Roles → Web Server IIS)
+# Install IIS with required features
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebServerRole, IIS-WebServer, IIS-CommonHttpFeatures, IIS-HttpErrors, IIS-HttpRedirect, IIS-ApplicationDevelopment, IIS-NetFxExtensibility45, IIS-HealthAndDiagnostics, IIS-HttpLogging, IIS-Security, IIS-RequestFiltering, IIS-Performance, IIS-WebServerManagementTools, IIS-ManagementConsole, IIS-IIS6ManagementCompatibility, IIS-Metabase, IIS-ASPNET45 -All
+
 # Install .NET 9.0 Hosting Bundle
 Invoke-WebRequest -Uri "https://download.visualstudio.microsoft.com/download/pr/93a0c5b2-5f2c-4e9a-bbe9-46822de0d62c/3d31df7c54b9d52dbae2e5fa0b1ff0c7/dotnet-hosting-9.0.9-win.exe" -OutFile "dotnet-hosting-9.0.9-win.exe"
 .\dotnet-hosting-9.0.9-win.exe /install /quiet
+
+# Restart IIS to activate features
 iisreset
 ```
 
@@ -48,12 +52,13 @@ if ($p.ExitCode -eq 0) { iisreset }
 ### **5. Manual IIS Setup**
 After running `DEPLOY.bat`, configure IIS manually:
 
-1. **Open IIS Manager**
+1. **Open IIS Manager** (search "IIS" in Start menu)
 2. **Add Website**:
    - Name: `IISApp`
    - Physical Path: `C:\inetpub\wwwroot\simple-iis-app`
    - Port: `8080`
-   - Application Pool: `simple-iis-app`
+   - Application Pool: `simple-iis-app` (will be created automatically)
+3. **Set Permissions**: Give `IIS AppPool\simple-iis-app` Read & Execute access to the physical path
 
 
 ### **6. Test**
@@ -100,9 +105,11 @@ dotnet publish -c Release -o bin/Release/net9.0/publish/
 
 | Issue | Solution |
 |-------|----------|
+| IIS Not Installing | Run PowerShell as Administrator, check Windows Updates |
 | 500.19 Error | Check ASP.NET Core Module V2 installed |
 | Permission Error | Set IIS AppPool permissions on directory |
 | .NET Not Found | Install .NET 9.0 Hosting Bundle |
+| IIS Manager Missing | Re-run IIS install with `-ManagementConsole` feature |
 | Datadog Not Working | Check API key and run `iisreset` |
 
 ## 🌐 **Live Demo**
