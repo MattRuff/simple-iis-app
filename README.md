@@ -44,9 +44,18 @@ Right-click DEPLOY.bat → "Run as administrator"
 
 ### **4. Install Datadog Infra, Logs, APM (Optional)**
 ```powershell
-# Replace XXXXXX with your Datadog API key
-$p = Start-Process -Wait -PassThru msiexec -ArgumentList '/qn /i "https://windows-agent.datadoghq.com/datadog-agent-7-latest.amd64.msi" /log C:\Windows\SystemTemp\install-datadog.log APIKEY="XXXXXX" SITE="datadoghq.com" DD_APM_INSTRUMENTATION_ENABLED="iis" DD_APM_INSTRUMENTATION_LIBRARIES="dotnet:3"'
-if ($p.ExitCode -eq 0) { iisreset }
+# Set your Datadog API key (replace with your actual key)
+$env:DD_API_KEY = "your-actual-datadog-api-key-here"
+
+# Install Datadog Agent with IIS and .NET APM instrumentation
+$p = Start-Process -Wait -PassThru msiexec -ArgumentList "/qn /i `"https://windows-agent.datadoghq.com/datadog-agent-7-latest.amd64.msi`" /log C:\Windows\SystemTemp\install-datadog.log APIKEY=`"$env:DD_API_KEY`" SITE=`"datadoghq.com`" DD_APM_INSTRUMENTATION_ENABLED=`"iis`" DD_APM_INSTRUMENTATION_LIBRARIES=`"dotnet:3`""
+if ($p.ExitCode -eq 0) { 
+    Write-Host "Datadog Agent installed successfully! Restarting IIS..." -ForegroundColor Green
+    iisreset 
+    Write-Host "IIS restarted. Datadog instrumentation is now active." -ForegroundColor Green
+} else {
+    Write-Host "Datadog installation failed with exit code $($p.ExitCode). Check logs at C:\Windows\SystemTemp\install-datadog.log" -ForegroundColor Red
+}
 ```
 
 ### **5. Manual IIS Setup**
