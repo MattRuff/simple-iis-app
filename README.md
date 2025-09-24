@@ -111,11 +111,29 @@ A demonstration ASP.NET Core application for testing IIS deployment, authenticat
      - ✅ Provide IIS configuration instructions
 
 3. **Manual IIS Configuration:**
-   - Open **IIS Manager**
-   - Follow the script's output instructions for:
-     - Creating Application Pool (`simple-iis-app`)
-     - Creating Website (port 8080)
-     - Setting directory permissions
+   
+   **Step A: Create Application Pool**
+   - Open **IIS Manager** (search "IIS" in Start menu)
+   - Right-click **"Application Pools"** → **"Add Application Pool"**
+   - **Name**: `simple-iis-app`
+   - **.NET CLR Version**: `No Managed Code`
+   - Click **OK**
+
+   **Step B: Add Website**
+   - Right-click **"Sites"** → **"Add Website"**
+   - **Site name**: `IISApp` (or any name you prefer)
+   - **Physical path**: `C:\inetpub\wwwroot\simple-iis-app`
+   - **Port**: `8080`
+   - **Application pool**: `simple-iis-app` (select from dropdown)
+   - Check **"Start Website immediately"**
+   - Click **OK**
+
+   **Step C: Set Directory Permissions**
+   - Right-click `C:\inetpub\wwwroot\simple-iis-app` in File Explorer
+   - **Properties** → **Security** → **Edit** → **Add**
+   - Type: `IIS AppPool\simple-iis-app`
+   - Give it **Read & Execute** permissions
+   - Click **OK**
 
 4. **Test Deployment:**
    - Browse to: `http://localhost:8080`
@@ -207,21 +225,31 @@ DEPLOY.bat
 
 ### Step 2: Configure IIS
 
-1. **Open IIS Manager**
-2. **Right-click "Sites"** → **"Add Website..."**
-3. **Configure EXACTLY as shown:**
-   - **Site name**: `SimpleIISApp`
-   - **Physical path**: `C:\inetpub\wwwroot\SimpleIISApp`
-   - **Port**: `8080` (or any available port)
+**Step A: Create Application Pool**
+1. **Open IIS Manager** (search "IIS" in Start menu)
+2. **Right-click "Application Pools"** → **"Add Application Pool"**
+3. **Configure:**
+   - **Name**: `simple-iis-app`
+   - **.NET CLR Version**: `No Managed Code`
+4. **Click OK**
+
+**Step B: Add Website**
+1. **Right-click "Sites"** → **"Add Website"**
+2. **Configure EXACTLY as shown:**
+   - **Site name**: `IISApp` (or any name you prefer)
+   - **Physical path**: `C:\inetpub\wwwroot\simple-iis-app`
+   - **Port**: `8080`
+   - **Application pool**: `simple-iis-app` (select from dropdown)
    - **Binding**: HTTP (no SSL needed)
-4. **Click OK**
+   - Check **"Start Website immediately"**
+3. **Click OK**
 
-### Step 3: Configure Application Pool
-
-1. **Click "Application Pools"** in IIS Manager
-2. **Right-click your SimpleIISApp pool** → **"Advanced Settings"**
-3. **Set .NET CLR Version**: `No Managed Code`
-4. **Click OK**
+**Step C: Set Directory Permissions**
+1. **Right-click** `C:\inetpub\wwwroot\simple-iis-app` in File Explorer
+2. **Properties** → **Security** → **Edit** → **Add**
+3. **Type**: `IIS AppPool\simple-iis-app`
+4. **Give it Read & Execute permissions**
+5. **Click OK**
 
 ### Step 4: Test
 
@@ -601,28 +629,34 @@ deploy-admin.bat
 
 **⚠️ Common Mistake:** Don't point IIS directly to your source folder or Desktop - always use `C:\inetpub\wwwroot\SimpleIISApp`!
 
-### **Step 3.2: Create IIS Site** ✅ **AUTOMATED!**
-~~1. **Open IIS Manager**~~ **DONE BY SCRIPT!**
-~~2. **Right-click "Sites"** → **"Add Website..."**~~ **DONE BY SCRIPT!**
-~~3. **Configure EXACTLY as shown:**~~ **DONE BY SCRIPT!**
-   - ✅ **Site name:** `SimpleIISApp` 
-   - ✅ **Physical path:** `C:\inetpub\wwwroot\SimpleIISApp`
-   - ✅ **Binding Type:** `http`
-   - ✅ **Port:** `8080` (default, or updates existing)
-~~4. **Click OK**~~ **DONE BY SCRIPT!**
+### **Step 3.2: Create Application Pool**
+1. **Open IIS Manager** (search "IIS" in Start menu)
+2. **Right-click "Application Pools"** → **"Add Application Pool"**
+3. **Configure:**
+   - **Name:** `simple-iis-app`
+   - **.NET CLR Version:** `No Managed Code`
+   - **Managed Pipeline Mode:** `Integrated`
+4. **Click OK**
 
-🎯 **AUTOMATED:** The deployment script now automatically creates the IIS site and application pool for you!
+### **Step 3.3: Create IIS Site**
+1. **Right-click "Sites"** → **"Add Website"**
+2. **Configure EXACTLY as shown:**
+   - **Site name:** `IISApp` (or any name you prefer)
+   - **Physical path:** `C:\inetpub\wwwroot\simple-iis-app`
+   - **Port:** `8080`
+   - **Application pool:** `simple-iis-app` (select from dropdown)
+   - **Binding Type:** `http`
+   - Check **"Start Website immediately"**
+3. **Click OK**
 
-### **Step 3.3: Configure Application Pool** ✅ **AUTOMATED!**
-~~1. **Click "Application Pools"** in IIS Manager~~ **DONE BY SCRIPT!**
-~~2. **Find your site's app pool** (usually same name as site)~~ **DONE BY SCRIPT!**
-~~3. **Right-click** → **"Advanced Settings"**~~ **DONE BY SCRIPT!**
-~~4. **Set:**~~ **DONE BY SCRIPT!**
-   - ✅ **.NET CLR Version:** `No Managed Code`
-   - ✅ **Managed Pipeline Mode:** `Integrated`
-~~5. **Click OK**~~ **DONE BY SCRIPT!**
+### **Step 3.4: Set Directory Permissions**
+1. **Right-click** `C:\inetpub\wwwroot\simple-iis-app` in File Explorer
+2. **Properties** → **Security** → **Edit** → **Add**
+3. **Type:** `IIS AppPool\simple-iis-app`
+4. **Give it Read & Execute permissions**
+5. **Click OK**
 
-🎯 **AUTOMATED:** Application pool `SimpleIISApp` is automatically created and configured with "No Managed Code" for .NET Core!
+🎯 **MANUAL SETUP:** After running `DEPLOY.bat`, you'll need to configure IIS manually as shown above.
 
 ---
 
