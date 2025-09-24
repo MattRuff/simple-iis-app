@@ -91,30 +91,24 @@ A demonstration ASP.NET Core application for testing IIS deployment, authenticat
 
 ### **Step 5: Deploy the Application**
 
-**🆕 SMART DEPLOYMENT: One Script, Multiple Scenarios**
+**🚀 PRE-BUILT DEPLOYMENT: Fast & Simple**
 
-1. **Download from GitHub:**
+1. **Get the Pre-Built Application:**
    - 🔗 Go to: [https://github.com/MattRuff/simple-iis-app](https://github.com/MattRuff/simple-iis-app)
    - Click **"Code"** → **"Download ZIP"**
-   - Extract the ZIP file to your Windows server (or copy pre-built from dev machine)
+   - **Or** copy the pre-built folder from your development machine
+   - **Important:** The `bin\Release\net9.0\publish\` folder must be included
 
-2. **Run Smart Deployment Script:**
-   - Navigate to the extracted folder
+2. **Deploy to Server:**
+   - Extract/copy the folder to your Windows server
+   - Navigate to the folder
    - **Right-click** on `DEPLOY.bat`
    - Select **"Run as administrator"**
-   - The script automatically detects and handles your scenario:
-
-**🔍 Scenario 1: Pre-Built Files Detected**
-- ✅ Uses existing `bin\Release\net9.0\publish\` files
-- ✅ **No .NET SDK required** on server
-- ✅ Faster deployment (no build time)
-- ✅ Perfect for production servers
-
-**🔨 Scenario 2: No Pre-Built Files**
-- ✅ Builds the application on the server
-- ✅ Requires .NET SDK installation
-- ✅ Good for development/testing environments
-- ✅ Provides helpful guidance if SDK is missing
+   - The script will:
+     - ✅ Verify pre-built files exist
+     - ✅ Copy files to IIS directory: `C:\inetpub\wwwroot\simple-iis-app`
+     - ✅ Set up Datadog environment variables
+     - ✅ Provide IIS configuration instructions
 
 3. **Manual IIS Configuration:**
    - Open **IIS Manager**
@@ -127,11 +121,11 @@ A demonstration ASP.NET Core application for testing IIS deployment, authenticat
    - Browse to: `http://localhost:8080`
    - You should see the Simple IIS App running! 🎉
 
-**💡 Benefits of Smart Deployment:**
-- ✅ **One script handles everything** - no confusion about which to use
-- ✅ **Automatic detection** of deployment scenario
-- ✅ **Clear guidance** when requirements are missing
-- ✅ **Supports both** pre-built and build-on-server workflows
+**💡 Benefits of Pre-Built Deployment:**
+- ✅ **No .NET SDK required** on server (only Runtime)
+- ✅ **Fast deployment** - no build time on server
+- ✅ **Simple and reliable** - just copy and deploy
+- ✅ **Perfect for production** - minimal server requirements
 
 ### **🔐 Security Notes**
 
@@ -186,37 +180,30 @@ When you're done testing:
 
 ## 🚀 Quick Deployment
 
-### Step 0: Install .NET (Choose Your Scenario)
+### Step 0: Install .NET Runtime on Server
 
-**🔍 For Pre-Built Deployment (Recommended):**
+**🔍 Pre-Built Deployment (Server Requirements):**
 1. **Download**: [https://dotnet.microsoft.com/en-us/download/dotnet/9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
 2. **Get**: "**ASP.NET Core Runtime 9.0.9 - Windows Hosting Bundle**"
 3. **Install & restart IIS**: `iisreset`
 
-**🔨 For Build-on-Server Deployment:**
-1. **Download**: [https://dotnet.microsoft.com/en-us/download/dotnet/9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
-2. **Get**: "**.NET 9.0 SDK**" (includes everything)
-3. **Install & restart IIS**: `iisreset`
+**💡 No .NET SDK needed on server** - the application is already built!
 
-### Step 1: Run Smart Deployment Script
+### Step 1: Run Pre-Built Deployment Script
 
 ```bash
 # Right-click and "Run as administrator"
 DEPLOY.bat
 ```
 
-**What this smart script does:**
-- 🔍 **Auto-detects** your deployment scenario
-- ✅ **Pre-built files exist?** Deploys them instantly
-- ✅ **No pre-built files?** Builds then deploys
-- ✅ Creates IIS directory: `C:\inetpub\wwwroot\simple-iis-app`
-- ✅ Copies files to IIS directory automatically
-- ✅ Sets up Datadog environment variables
+**What this deployment script does:**
+- ✅ **Verifies pre-built files** exist in `bin\Release\net9.0\publish\`
+- ✅ **Copies deployment files** to IIS directory: `C:\inetpub\wwwroot\simple-iis-app`
+- ✅ **Sets up Datadog environment variables** for monitoring
+- ✅ **Provides IIS configuration instructions** for manual setup
 - 📝 **Creates comprehensive logs** in `logs/` folder for debugging
   - Main deployment log
-  - NuGet/package resolution log  
-  - Build/publish detailed log (if building)
-  - Environment/system debug log
+  - Debug log for troubleshooting
 
 ### Step 2: Configure IIS
 
