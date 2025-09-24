@@ -17,7 +17,8 @@ A demonstration ASP.NET Core application for testing IIS deployment, authenticat
 ### **1. Launch AWS EC2 Instance**
 - **Instance Type**: `t3.small` (Windows)
 - **Security**: Allow RDP (port 3389) from **your IP only** ⚠️
-- Connect via RDP using downloaded key pair
+- Install Windows App (https://apps.apple.com/us/app/windows-app/id1295203466?mt=12)
+- Connect via RDP using downloaded key pair and password
 
 ### **2. Install Prerequisites**
 ```powershell
@@ -37,7 +38,7 @@ https://github.com/MattRuff/simple-iis-app/archive/refs/heads/main.zip
 Right-click DEPLOY.bat → "Run as administrator"
 ```
 
-### **4. Install Datadog (Optional)**
+### **4. Install Datadog Infra, Logs, APM (Optional)**
 ```powershell
 # Replace XXXXXX with your Datadog API key
 $p = Start-Process -Wait -PassThru msiexec -ArgumentList '/qn /i "https://windows-agent.datadoghq.com/datadog-agent-7-latest.amd64.msi" /log C:\Windows\SystemTemp\install-datadog.log APIKEY="XXXXXX" SITE="datadoghq.com" DD_APM_INSTRUMENTATION_ENABLED="iis" DD_APM_INSTRUMENTATION_LIBRARIES="dotnet:3"'
@@ -48,15 +49,12 @@ if ($p.ExitCode -eq 0) { iisreset }
 After running `DEPLOY.bat`, configure IIS manually:
 
 1. **Open IIS Manager**
-2. **Create Application Pool**: 
-   - Name: `simple-iis-app`
-   - .NET CLR Version: `No Managed Code`
-3. **Add Website**:
+2. **Add Website**:
    - Name: `IISApp`
    - Physical Path: `C:\inetpub\wwwroot\simple-iis-app`
    - Port: `8080`
    - Application Pool: `simple-iis-app`
-4. **Set Permissions**: Give `IIS AppPool\simple-iis-app` Read & Execute access to the physical path
+
 
 ### **6. Test**
 - Browse to: `http://localhost:8080`
