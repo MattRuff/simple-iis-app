@@ -2,6 +2,153 @@
 
 A demonstration ASP.NET Core application for testing IIS deployment, authentication, and monitoring on Windows servers. **Perfect for observability testing with tools like Datadog!**
 
+## 🌐 **AWS EC2 Setup Guide**
+
+### **Step 1: Launch AWS EC2 Instance**
+
+1. **Go to AWS Sandbox (mcse-sandbox):**
+   - 🔗 Navigate to: [AWS EC2 Console](https://369042512949-bgy7fais.us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#Overview:)
+
+2. **Launch EC2 Instance:**
+   - Click **"Launch Instance"**
+   - **AMI**: Choose **Windows** from QuickStart
+   - **Instance Type**: Select **t3.micro** (free tier eligible)
+   - **Key Pair**: 
+     - Click **"Create new key pair"**
+     - Give it a descriptive name (e.g., `simple-iis-app-key`)
+     - Download and save the `.pem` file securely
+   - **Network Settings** ⚠️ **CRITICAL SECURITY**:
+     - ✅ Allow **RDP (port 3389)** 
+     - ❌ **DO NOT** select "Anywhere (0.0.0.0/0)"
+     - ✅ **Select "My IP"** to restrict RDP access to your current IP only
+     - This ensures only you can access the server
+   - Click **"Launch Instance"**
+
+### **Step 2: Connect via RDP**
+
+1. **Get Connection Details:**
+   - Select your launched instance
+   - Click **"Connect"** button
+   - Select **"RDP Client"** tab
+   - Click **"Get password"**
+   - Upload your key pair file (`.pem`)
+   - **Copy and save the password** to your notes
+
+2. **Download RDP File:**
+   - Click **"Download remote desktop file"**
+   - Save the `.rdp` file to your computer
+
+3. **Connect with RDP Client:**
+   - **Windows**: Use built-in Remote Desktop Connection
+   - **macOS**: Use **Microsoft Remote Desktop** from Mac App Store
+   - **Alternative**: Use **Windows App** from Mac App Store
+   - Open the `.rdp` file with your RDP client
+   - Enter the password you copied earlier
+
+### **Step 3: Configure Windows Server**
+
+1. **Open Server Manager:**
+   - Server Manager should open automatically
+   - If not, click Start → Server Manager
+
+2. **Install IIS:**
+   - In Server Manager, click **"Manage"** (top right)
+   - Select **"Add Roles and Features"**
+   - Click **Next** through the wizard until you reach **Server Roles**
+   - Check **"Web Server (IIS)"**
+   - Accept any additional features it wants to install
+   - Click **Next** through remaining steps
+   - Click **"Install"**
+   - Wait for installation to complete
+
+3. **Verify IIS Installation:**
+   - Open browser and go to `http://localhost`
+   - You should see the IIS welcome page
+
+### **Step 4: Install .NET 9.0 Runtime**
+
+**🆕 SIMPLIFIED: Only Runtime Required on Server**
+
+1. **Download .NET 9.0 Runtime:**
+   - 🔗 Go to: [.NET 9.0 Download](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+   - **FOR SERVERS**: Download **"ASP.NET Core Runtime 9.0.9 - Windows Hosting Bundle"**
+   - **No SDK needed** on the server (application is pre-built)
+
+2. **Install Hosting Bundle:**
+   - Run the downloaded installer (`dotnet-hosting-9.0.9-win.exe`)
+   - Follow the installation wizard
+   - **Restart IIS** when prompted (or run `iisreset` in Command Prompt)
+
+3. **Verify Installation:**
+   - Open Command Prompt as Administrator
+   - Run: `dotnet --info`
+   - Verify .NET 9.0 Runtime is listed
+
+**✅ New Deployment Model:**
+- **Development Machine**: Needs .NET SDK (for building)
+- **Server Machine**: Only needs Runtime (for running pre-built apps)
+- **Result**: Faster, more secure, and simpler server setup
+
+### **Step 5: Deploy the Application**
+
+**🆕 SMART DEPLOYMENT: One Script, Multiple Scenarios**
+
+1. **Download from GitHub:**
+   - 🔗 Go to: [https://github.com/MattRuff/simple-iis-app](https://github.com/MattRuff/simple-iis-app)
+   - Click **"Code"** → **"Download ZIP"**
+   - Extract the ZIP file to your Windows server (or copy pre-built from dev machine)
+
+2. **Run Smart Deployment Script:**
+   - Navigate to the extracted folder
+   - **Right-click** on `DEPLOY.bat`
+   - Select **"Run as administrator"**
+   - The script automatically detects and handles your scenario:
+
+**🔍 Scenario 1: Pre-Built Files Detected**
+- ✅ Uses existing `bin\Release\net9.0\publish\` files
+- ✅ **No .NET SDK required** on server
+- ✅ Faster deployment (no build time)
+- ✅ Perfect for production servers
+
+**🔨 Scenario 2: No Pre-Built Files**
+- ✅ Builds the application on the server
+- ✅ Requires .NET SDK installation
+- ✅ Good for development/testing environments
+- ✅ Provides helpful guidance if SDK is missing
+
+3. **Manual IIS Configuration:**
+   - Open **IIS Manager**
+   - Follow the script's output instructions for:
+     - Creating Application Pool (`simple-iis-app`)
+     - Creating Website (port 8080)
+     - Setting directory permissions
+
+4. **Test Deployment:**
+   - Browse to: `http://localhost:8080`
+   - You should see the Simple IIS App running! 🎉
+
+**💡 Benefits of Smart Deployment:**
+- ✅ **One script handles everything** - no confusion about which to use
+- ✅ **Automatic detection** of deployment scenario
+- ✅ **Clear guidance** when requirements are missing
+- ✅ **Supports both** pre-built and build-on-server workflows
+
+### **🔐 Security Notes**
+
+- ✅ **RDP Access**: Restricted to your IP only
+- ✅ **Default Website**: Consider disabling if not needed
+- ✅ **Firewall**: Windows Firewall is enabled by default
+- ⚠️ **Testing Only**: This setup is for development/testing, not production
+
+### **🧹 Cleanup**
+
+When you're done testing:
+1. **Stop the EC2 instance** to avoid charges
+2. **Terminate the instance** if no longer needed
+3. **Delete the key pair** if not reusing
+
+---
+
 ## ✨ Features
 
 - 🔐 **Simple Authentication**: Built-in login system (admin/password)
@@ -16,13 +163,16 @@ A demonstration ASP.NET Core application for testing IIS deployment, authenticat
 
 ## 📥 **FIRST: Download Required Software**
 
-**⚠️ BEFORE DEPLOYING:** You must download .NET 9.0 on your Windows server!
+**⚠️ BEFORE DEPLOYING:** You must download .NET 9.0 SDK on your Windows server!
 
 🔗 **Go to**: [https://dotnet.microsoft.com/en-us/download/dotnet/9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)  
-📦 **Download**: "ASP.NET Core Runtime 9.0.9 - **Windows Hosting Bundle**"  
+📦 **Download**: "**.NET 9.0 SDK**" (required for building the application)  
 🚀 **Install**: Run the installer, then restart IIS (`iisreset`)
 
-> 💡 **Why Hosting Bundle?** It includes .NET Runtime + ASP.NET Core Module V2 for IIS!
+> 💡 **SDK vs Runtime:** 
+> - **SDK** = Can build AND run applications (what you need for `DEPLOY.bat`)
+> - **Runtime** = Can only run pre-built applications
+> - **Hosting Bundle** = Runtime + IIS integration (for production servers)
 
 ## 🛠️ Requirements
 
@@ -36,36 +186,36 @@ A demonstration ASP.NET Core application for testing IIS deployment, authenticat
 
 ## 🚀 Quick Deployment
 
-### Step 0: Install .NET 9.0 (Required!)
+### Step 0: Install .NET (Choose Your Scenario)
 
-**🚨 If you haven't already:**
+**🔍 For Pre-Built Deployment (Recommended):**
 1. **Download**: [https://dotnet.microsoft.com/en-us/download/dotnet/9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
-2. **Get**: "ASP.NET Core Runtime 9.0.9 - Windows Hosting Bundle"
+2. **Get**: "**ASP.NET Core Runtime 9.0.9 - Windows Hosting Bundle**"
 3. **Install & restart IIS**: `iisreset`
 
-### Step 1: Run Automated Deployment Script
+**🔨 For Build-on-Server Deployment:**
+1. **Download**: [https://dotnet.microsoft.com/en-us/download/dotnet/9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+2. **Get**: "**.NET 9.0 SDK**" (includes everything)
+3. **Install & restart IIS**: `iisreset`
 
-**Option A: Admin-Checked Script (Recommended)**
+### Step 1: Run Smart Deployment Script
+
 ```bash
 # Right-click and "Run as administrator"
-deploy-admin.bat
+DEPLOY.bat
 ```
 
-**Option B: Manual Admin Check**
-```bash
-# Run Command Prompt as Administrator, then run:
-deploy.bat
-```
-
-**What this script does:**
-- ✅ Builds the application
-- ✅ Publishes to `bin\Release\net9.0\publish`
-- ✅ Creates IIS directory: `C:\inetpub\wwwroot\SimpleIISApp`
+**What this smart script does:**
+- 🔍 **Auto-detects** your deployment scenario
+- ✅ **Pre-built files exist?** Deploys them instantly
+- ✅ **No pre-built files?** Builds then deploys
+- ✅ Creates IIS directory: `C:\inetpub\wwwroot\simple-iis-app`
 - ✅ Copies files to IIS directory automatically
+- ✅ Sets up Datadog environment variables
 - 📝 **Creates comprehensive logs** in `logs/` folder for debugging
   - Main deployment log
   - NuGet/package resolution log  
-  - Build/publish detailed log
+  - Build/publish detailed log (if building)
   - Environment/system debug log
 
 ### Step 2: Configure IIS
@@ -526,9 +676,10 @@ Module: IIS Web Core
 **Root Cause:** ASP.NET Core Module V2 not installed
 
 **Solution:**
-1. **Download .NET 9.0 Windows Hosting Bundle:**
+1. **Download .NET 9.0 SDK or Hosting Bundle:**
    - Go to: [https://dotnet.microsoft.com/en-us/download/dotnet/9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
-   - Download: "ASP.NET Core Runtime 9.0.9 - Windows Hosting Bundle"
+   - **For building**: Download ".NET 9.0 SDK" 
+   - **For runtime only**: Download "ASP.NET Core Runtime 9.0.9 - Windows Hosting Bundle"
 
 2. **Install the bundle:**
    ```powershell
