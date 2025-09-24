@@ -12,7 +12,7 @@ A demonstration ASP.NET Core application for testing IIS deployment, authenticat
 2. **Launch EC2 Instance:**
    - Click **"Launch Instance"**
    - **AMI**: Choose **Windows** from QuickStart
-   - **Instance Type**: Select **t3.micro** (free tier eligible)
+   - **Instance Type**: Select **t3.small** (recommended for IIS + Datadog)
    - **Key Pair**: 
      - Click **"Create new key pair"**
      - Give it a descriptive name (e.g., `simple-iis-app-key`)
@@ -135,15 +135,35 @@ A demonstration ASP.NET Core application for testing IIS deployment, authenticat
    - Give it **Read & Execute** permissions
    - Click **OK**
 
-4. **Test Deployment:**
+4. **Install Datadog Agent:**
+   
+   Open **PowerShell as Administrator** and run this script (replace `XXXXXX` with your Datadog API key):
+   
+   ```powershell
+   $p = Start-Process -Wait -PassThru msiexec -ArgumentList '/qn /i "https://windows-agent.datadoghq.com/datadog-agent-7-latest.amd64.msi" /log C:\Windows\SystemTemp\install-datadog.log APIKEY="XXXXXX" SITE="datadoghq.com" DD_APM_INSTRUMENTATION_ENABLED="iis" DD_APM_INSTRUMENTATION_LIBRARIES="dotnet:3"'
+   if ($p.ExitCode -ne 0) {
+     Write-Host "msiexec failed with exit code $($p.ExitCode) please check the logs at C:\Windows\SystemTemp\install-datadog.log" -ForegroundColor Red
+   }
+   ```
+   
+   **What this does:**
+   - ✅ Installs Datadog Agent 7 (latest version)
+   - ✅ Enables IIS APM instrumentation
+   - ✅ Enables .NET tracing
+   - ✅ Sets your Datadog site to `datadoghq.com`
+   - ✅ Provides detailed logging for troubleshooting
+
+5. **Test Deployment:**
    - Browse to: `http://localhost:8080`
    - You should see the Simple IIS App running! 🎉
+   - Check your Datadog dashboard for incoming metrics and traces
 
 **💡 Benefits of Pre-Built Deployment:**
 - ✅ **No .NET SDK required** on server (only Runtime)
 - ✅ **Fast deployment** - no build time on server
 - ✅ **Simple and reliable** - just copy and deploy
 - ✅ **Perfect for production** - minimal server requirements
+- ✅ **Full Datadog monitoring** - APM, logs, metrics, and traces
 
 ### **🔐 Security Notes**
 
@@ -251,7 +271,18 @@ DEPLOY.bat
 4. **Give it Read & Execute permissions**
 5. **Click OK**
 
-### Step 4: Test
+### Step 4: Install Datadog Agent
+
+Open **PowerShell as Administrator** and run this script (replace `XXXXXX` with your Datadog API key):
+
+```powershell
+$p = Start-Process -Wait -PassThru msiexec -ArgumentList '/qn /i "https://windows-agent.datadoghq.com/datadog-agent-7-latest.amd64.msi" /log C:\Windows\SystemTemp\install-datadog.log APIKEY="XXXXXX" SITE="datadoghq.com" DD_APM_INSTRUMENTATION_ENABLED="iis" DD_APM_INSTRUMENTATION_LIBRARIES="dotnet:3"'
+if ($p.ExitCode -ne 0) {
+  Write-Host "msiexec failed with exit code $($p.ExitCode) please check the logs at C:\Windows\SystemTemp\install-datadog.log" -ForegroundColor Red
+}
+```
+
+### Step 5: Test
 
 Browse to: `http://localhost:8080`
 
@@ -271,6 +302,7 @@ Browse to: `http://localhost:8080`
 - Visit `/api/healthcheck` - Detailed JSON health data  
 - Visit `/api/metrics` - Application metrics
 - Check browser console for auto-healthcheck logs
+- **Check your Datadog dashboard** for incoming metrics and traces
 
 ## 📁 **CRITICAL: IIS Physical Path**
 
@@ -660,12 +692,49 @@ deploy-admin.bat
 
 ---
 
-## **Phase 4: Testing & Troubleshooting** 🔍
+## **Phase 4: Install Datadog Agent** 📊
 
-### **Step 4.1: First Test**
+### **Step 4.1: Install Datadog Agent**
+
+Open **PowerShell as Administrator** and run this script (replace `XXXXXX` with your Datadog API key):
+
+```powershell
+$p = Start-Process -Wait -PassThru msiexec -ArgumentList '/qn /i "https://windows-agent.datadoghq.com/datadog-agent-7-latest.amd64.msi" /log C:\Windows\SystemTemp\install-datadog.log APIKEY="XXXXXX" SITE="datadoghq.com" DD_APM_INSTRUMENTATION_ENABLED="iis" DD_APM_INSTRUMENTATION_LIBRARIES="dotnet:3"'
+if ($p.ExitCode -ne 0) {
+  Write-Host "msiexec failed with exit code $($p.ExitCode) please check the logs at C:\Windows\SystemTemp\install-datadog.log" -ForegroundColor Red
+}
+```
+
+**What this installation includes:**
+- ✅ **Datadog Agent 7** (latest version)
+- ✅ **IIS APM instrumentation** - automatic tracing of web requests
+- ✅ **.NET library instrumentation** - traces your application code
+- ✅ **Datadog site configuration** - connects to datadoghq.com
+- ✅ **Installation logging** - detailed logs for troubleshooting
+
+### **Step 4.2: Verify Installation**
+
+1. **Check Windows Services:**
+   - Open **Services** (`services.msc`)
+   - Look for **"Datadog Agent"** service
+   - Should be **Running** status
+
+2. **Check Datadog Status:**
+   ```powershell
+   & "C:\Program Files\Datadog\Datadog Agent\bin\agent.exe" status
+   ```
+
+3. **Check Installation Log:**
+   - If there are issues, check: `C:\Windows\SystemTemp\install-datadog.log`
+
+---
+
+## **Phase 5: Testing & Troubleshooting** 🔍
+
+### **Step 5.1: First Test**
 Browse to: `http://localhost:8080`
 
-**🎉 Success:** You see "Simple IIS App is Running!" page → **Skip to Phase 5**
+**🎉 Success:** You see "Simple IIS App is Running!" page → **Skip to Phase 6**
 
 **❌ Error:** Continue to troubleshooting steps below
 
@@ -744,9 +813,9 @@ HTTP Error 404.0 - Not Found
 
 ---
 
-## **Phase 5: Verification & Success** ✅
+## **Phase 6: Verification & Success** ✅
 
-### **Step 5.1: Verify Successful Deployment**
+### **Step 6.1: Verify Successful Deployment**
 When working correctly, you should see:
 
 ```
@@ -774,27 +843,28 @@ System Information:
 
 **Plus you should see a monitoring indicator in the top-right corner showing "🔄 Monitoring: ✅ Active"**
 
-### **Step 5.2: Test Authentication**
+### **Step 6.2: Test Authentication**
 1. **Click "🔐 Login"** in the navigation
 2. **Enter credentials:** admin / password
 3. **Verify redirect** to admin dashboard
 4. **Check navigation** shows "🎛️ Dashboard" and "🚪 Logout" 
 5. **Test logout** functionality
 
-### **Step 5.3: Test Monitoring**
+### **Step 6.3: Test Monitoring & Datadog**
 1. **Visit monitoring endpoints:**
    - `http://localhost:8080/health` - Should return "Healthy"
    - `http://localhost:8080/api/healthcheck` - JSON health data
    - `http://localhost:8080/api/metrics` - JSON metrics
 2. **Open browser console** (F12) - Check for auto-healthcheck logs
 3. **Watch monitoring indicator** - Should show "✅ Active (X checks)"
+4. **Check Datadog dashboard** - Look for incoming metrics and traces
 
-### **Step 5.4: Additional Tests**
+### **Step 6.4: Additional Tests**
 1. **Navigate to About page:** `http://localhost:8080/Home/About`
 2. **Refresh page** - timestamp should update
 3. **Check different browsers** - should work consistently
 
-### **Step 5.3: Performance Verification**
+### **Step 6.5: Performance Verification**
 ```powershell
 # Check Application Pool is running
 Get-IISAppPool | Where-Object {$_.Name -like "*SimpleIIS*"}
@@ -813,6 +883,8 @@ Get-IISSite | Where-Object {$_.Name -eq "SimpleIISApp"}
 - ✅ Implemented authentication with protected areas
 - ✅ Set up monitoring endpoints for observability
 - ✅ Configured auto-healthcheck for continuous monitoring
+- ✅ **Installed Datadog Agent** with IIS and .NET instrumentation
+- ✅ **Integrated full observability** - APM, logs, metrics, and traces
 - ✅ Troubleshot common deployment issues
 - ✅ Verified successful deployment with all features
 
@@ -823,9 +895,10 @@ Get-IISSite | Where-Object {$_.Name -eq "SimpleIISApp"}
 - **Authentication** can be simple but effective for testing
 - **Monitoring endpoints** are essential for observability
 - **Auto-healthchecks** generate consistent traffic for monitoring tools
+- **Datadog Agent** provides comprehensive monitoring out-of-the-box
+- **t3.small instances** are recommended for IIS + Datadog workloads
 
 **Next Steps:**
-- **Integrate with Datadog** or other monitoring tools
 - **Set up SSL certificates** for production deployment
 - **Add database connectivity** for more realistic scenarios
 - **Implement CI/CD pipelines** for automated deployment
