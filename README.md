@@ -143,6 +143,10 @@ A demonstration ASP.NET Core application for testing IIS deployment, authenticat
    $p = Start-Process -Wait -PassThru msiexec -ArgumentList '/qn /i "https://windows-agent.datadoghq.com/datadog-agent-7-latest.amd64.msi" /log C:\Windows\SystemTemp\install-datadog.log APIKEY="XXXXXX" SITE="datadoghq.com" DD_APM_INSTRUMENTATION_ENABLED="iis" DD_APM_INSTRUMENTATION_LIBRARIES="dotnet:3"'
    if ($p.ExitCode -ne 0) {
      Write-Host "msiexec failed with exit code $($p.ExitCode) please check the logs at C:\Windows\SystemTemp\install-datadog.log" -ForegroundColor Red
+   } else {
+     Write-Host "Datadog Agent installed successfully! Restarting IIS..." -ForegroundColor Green
+     iisreset
+     Write-Host "IIS restarted. Datadog instrumentation is now active." -ForegroundColor Green
    }
    ```
    
@@ -151,6 +155,7 @@ A demonstration ASP.NET Core application for testing IIS deployment, authenticat
    - ✅ Enables IIS APM instrumentation
    - ✅ Enables .NET tracing
    - ✅ Sets your Datadog site to `datadoghq.com`
+   - ✅ Restarts IIS to activate instrumentation
    - ✅ Provides detailed logging for troubleshooting
 
 5. **Test Deployment:**
@@ -279,6 +284,10 @@ Open **PowerShell as Administrator** and run this script (replace `XXXXXX` with 
 $p = Start-Process -Wait -PassThru msiexec -ArgumentList '/qn /i "https://windows-agent.datadoghq.com/datadog-agent-7-latest.amd64.msi" /log C:\Windows\SystemTemp\install-datadog.log APIKEY="XXXXXX" SITE="datadoghq.com" DD_APM_INSTRUMENTATION_ENABLED="iis" DD_APM_INSTRUMENTATION_LIBRARIES="dotnet:3"'
 if ($p.ExitCode -ne 0) {
   Write-Host "msiexec failed with exit code $($p.ExitCode) please check the logs at C:\Windows\SystemTemp\install-datadog.log" -ForegroundColor Red
+} else {
+  Write-Host "Datadog Agent installed successfully! Restarting IIS..." -ForegroundColor Green
+  iisreset
+  Write-Host "IIS restarted. Datadog instrumentation is now active." -ForegroundColor Green
 }
 ```
 
@@ -702,6 +711,10 @@ Open **PowerShell as Administrator** and run this script (replace `XXXXXX` with 
 $p = Start-Process -Wait -PassThru msiexec -ArgumentList '/qn /i "https://windows-agent.datadoghq.com/datadog-agent-7-latest.amd64.msi" /log C:\Windows\SystemTemp\install-datadog.log APIKEY="XXXXXX" SITE="datadoghq.com" DD_APM_INSTRUMENTATION_ENABLED="iis" DD_APM_INSTRUMENTATION_LIBRARIES="dotnet:3"'
 if ($p.ExitCode -ne 0) {
   Write-Host "msiexec failed with exit code $($p.ExitCode) please check the logs at C:\Windows\SystemTemp\install-datadog.log" -ForegroundColor Red
+} else {
+  Write-Host "Datadog Agent installed successfully! Restarting IIS..." -ForegroundColor Green
+  iisreset
+  Write-Host "IIS restarted. Datadog instrumentation is now active." -ForegroundColor Green
 }
 ```
 
@@ -710,6 +723,7 @@ if ($p.ExitCode -ne 0) {
 - ✅ **IIS APM instrumentation** - automatic tracing of web requests
 - ✅ **.NET library instrumentation** - traces your application code
 - ✅ **Datadog site configuration** - connects to datadoghq.com
+- ✅ **IIS restart** - activates instrumentation immediately
 - ✅ **Installation logging** - detailed logs for troubleshooting
 
 ### **Step 4.2: Verify Installation**
