@@ -26,8 +26,7 @@ A demonstration ASP.NET Core application for testing IIS deployment, authenticat
 Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebServerRole, IIS-WebServer, IIS-CommonHttpFeatures, IIS-HttpErrors, IIS-HttpRedirect, IIS-ApplicationDevelopment, IIS-NetFxExtensibility45, IIS-HealthAndDiagnostics, IIS-HttpLogging, IIS-Security, IIS-RequestFiltering, IIS-Performance, IIS-WebServerManagementTools, IIS-ManagementConsole, IIS-IIS6ManagementCompatibility, IIS-Metabase, IIS-ASPNET45 -All
 
 # Install .NET 9.0 Hosting Bundle
-Invoke-WebRequest -Uri "https://download.visualstudio.microsoft.com/download/pr/93a0c5b2-5f2c-4e9a-bbe9-46822de0d62c/3d31df7c54b9d52dbae2e5fa0b1ff0c7/dotnet-hosting-9.0.9-win.exe" -OutFile "dotnet-hosting-9.0.9-win.exe"
-.\dotnet-hosting-9.0.9-win.exe /install /quiet
+https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-9.0.9-windows-hosting-bundle-installer
 
 # Restart IIS to activate features
 iisreset
