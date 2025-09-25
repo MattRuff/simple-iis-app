@@ -21,13 +21,16 @@ A demonstration ASP.NET Core application for testing IIS deployment, authenticat
 - Connect via RDP using downloaded key pair and password
 
 ### **2. Install Prerequisites**
+Go to Powershell (Not Command Line)
 ```powershell
 # Install IIS with required features
 Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebServerRole, IIS-WebServer, IIS-CommonHttpFeatures, IIS-HttpErrors, IIS-HttpRedirect, IIS-ApplicationDevelopment, IIS-NetFxExtensibility45, IIS-HealthAndDiagnostics, IIS-HttpLogging, IIS-Security, IIS-RequestFiltering, IIS-Performance, IIS-WebServerManagementTools, IIS-ManagementConsole, IIS-IIS6ManagementCompatibility, IIS-Metabase, IIS-ASPNET45 -All
+```
 
 # Install .NET 9.0 Hosting Bundle
 https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-aspnetcore-9.0.9-windows-hosting-bundle-installer
 
+```powershell
 # Restart IIS to activate features
 iisreset
 ```
