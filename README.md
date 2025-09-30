@@ -68,7 +68,9 @@ After running `DEPLOY.bat`, configure IIS manually:
    - Name: `IISApp`
    - Physical Path: `C:\inetpub\wwwroot\simple-iis-app`
    - Port: `8080`
-   - Application Pool: `simple-iis-app` (will be created automatically)
+
+   ![IIS Site Creation Setup](IIS_Site_Creation.png)
+
 3. **Set Permissions**: Give `IIS AppPool\simple-iis-app` Read & Execute access to the physical path
 
 
