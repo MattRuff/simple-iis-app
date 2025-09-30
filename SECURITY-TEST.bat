@@ -240,3 +240,4 @@ echo 5. Verify ASM is properly configured and detecting threats
 echo.
 
 pause
+

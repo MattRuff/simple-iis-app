@@ -14,7 +14,7 @@ A demonstration ASP.NET Core application for testing IIS deployment, authenticat
 
 ## 🚀 **Quick Start**
 
-### **1. Launch AWS EC2 Instance**
+### **1. Launch AWS EC2 Instance (optional if you already have a Windows VM Ready)**
 - **Instance Type**: `t3.small` (Windows)
 - **Security**: Allow RDP (port 3389) from **your IP only** ⚠️
 - Install Windows App (https://apps.apple.com/us/app/windows-app/id1295203466?mt=12)
